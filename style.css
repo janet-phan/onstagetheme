@@ -1,10 +1,19 @@
 /*
-Theme Name: On Stage
-Author: On Stage
-Description: Custom WordPress theme for On Stage Theatrical Productions, Inc.
-Version: 1.0
+Theme Name: On Stage Theatrical Productions
+Theme URI: https://github.com/janet-phan/onstage-wp-theme
+Author: On Stage Theatrical Productions
+Author URI: https://github.com/janet-phan/onstage-wp-theme
+Description: Native WordPress block theme (Full Site Editing, no Elementor or page builders) for On Stage Theatrical Productions, Inc. Ported from the static client preview.
+Requires at least: 6.4
+Tested up to: 6.8
+Requires PHP: 7.4
+Version: 1.0.18
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: onstage
+Tags: full-site-editing, block-themes, custom-colors, custom-menu, featured-images, one-column, two-columns, three-columns
 */
+
 /* --- RESET & VARIABLES --- */
 * {
     margin: 0;
@@ -14,7 +23,8 @@ Text Domain: onstage
 
 :root {
     --primary-pink: #E95BAF;
-    --primary-blue: #7BC6F5;
+    --hero-cta-pink: #E95BAF;
+    --primary-blue: #81D4FA;
     --primary-green: #38E86B;
     --primary-purple: #6A3FC7;
     --text-dark: #1E1E1E;
@@ -49,8 +59,16 @@ body {
     color: white;
 }
 
-.pink-text {
-    color: var(--primary-pink);
+.pink-text,
+.programs .program-card h3.pink-text,
+.program-card h3.pink-text,
+.has-pink-color {
+    color: var(--primary-pink) !important;
+}
+
+.green-text {
+    color: var(--primary-green);
+    text-shadow: 5px 5px 20px rgba(84, 84, 84, .2);
 }
 
 .white-text {
@@ -106,14 +124,14 @@ h4 {
 
 .btn-white-pink {
     background-color: white;
-    color: var(--primary-pink);
-    border: 2px solid white;
+    color: var(--hero-cta-pink);
+    border: 2px solid var(--hero-cta-pink);
 }
 
 .btn-white-pink:hover {
-    background-color: var(--primary-pink);
+    background-color: var(--hero-cta-pink);
     color: white;
-    border-color: var(--primary-pink);
+    border-color: var(--hero-cta-pink);
 }
 
 .btn-blue-small {
@@ -192,7 +210,7 @@ h4 {
 /* --- TOP NAV --- */
 .top-nav {
     background-color: white;
-    padding: 5px 0;
+    padding: 12px 0;
     border-bottom: 1px solid #eee;
 }
 
@@ -200,13 +218,18 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    gap: 16px;
 }
 
 .nav-logo {
-    height: 180px;
+    height: 250px;
     width: auto;
-    margin-top: -35px;
-    margin-bottom: -35px;
+    margin-top: -55px;
+    margin-bottom: -55px;
     display: block;
     transition: transform 0.3s ease;
 }
@@ -242,35 +265,58 @@ h4 {
 
 .nav-links li a:hover {
     color: var(--primary-pink);
-    background-color: rgba(233, 91, 175, 0.08);
+    background-color: rgba(233, 30, 99, 0.08);
 }
 
 /* --- HERO SECTION --- */
 .hero {
     position: relative;
-    background: url('images/curtains.png') center/cover no-repeat;
-    padding: 100px 0;
+
+    min-height: calc(100vh - 120px);
+    min-height: calc(100svh - 120px);
+
+    display: flex;
+    align-items: center;
+
+    padding: 60px 0;
     color: white;
     overflow: hidden;
 }
 
-/* Fallback if image doesn't look red enough */
+/* The actual hero image */
+.hero-image {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    display: block;
+    z-index: 0;
+}
+
+/* Darkens the image enough for the text to remain readable */
 .hero-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    /* Subtle dark overlay for text contrast */
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.38);
+    z-index: 1;
+    pointer-events: none;
 }
 
 .hero-content {
     position: relative;
-    z-index: 1;
+    z-index: 2;
+
     display: flex;
     flex-direction: column;
     gap: 40px;
+
+    width: 100%;
 }
 
 .hero-text-row {
@@ -440,7 +486,7 @@ h4 {
 }
 
 .programs .program-card h3.pink-text {
-    color: var(--primary-pink);
+    color: var(--primary-pink) !important;
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
@@ -467,39 +513,6 @@ h4 {
 .programs .program-card .btn-blue-small {
     margin-top: auto;
     align-self: center;
-}
-
-/* Modern alignment using CSS subgrid where supported */
-@supports (grid-template-rows: subgrid) {
-    .programs .program-card {
-        display: grid;
-        grid-row: span 4;
-        grid-template-rows: subgrid;
-        row-gap: 0;
-        align-items: start;
-    }
-
-    .programs .program-card h3.pink-text {
-        margin-bottom: 0;
-        align-self: end;
-        padding-bottom: 12px;
-    }
-
-    .programs .program-card p {
-        margin-bottom: 0;
-        align-self: start;
-        padding-top: 4px;
-    }
-
-    .programs .program-card img {
-        margin: 15px 0 0 0;
-        align-self: center;
-    }
-
-    .programs .program-card .btn-blue-small {
-        margin: 15px 0 0 0;
-        align-self: center;
-    }
 }
 
 /* --- UPCOMING SHOWS --- */
@@ -553,6 +566,30 @@ h4 {
     margin: 5px 0;
 }
 
+/* Keep the full Christmas Spectacular artwork visible */
+.christmas-show-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain !important;
+    object-position: center !important;
+    background-color: white;
+}
+
+.buy-tickets-image .christmas-show-image {
+    width: 100%;
+    height: 300px;
+    object-fit: contain !important;
+    object-position: center !important;
+    background-color: white;
+}
+
+.event-item .christmas-show-image,
+.news-card .christmas-show-image {
+    object-fit: contain !important;
+    object-position: center !important;
+    background-color: white;
+}
+
 /* --- COSTUME RENTALS --- */
 .costume-rentals {
     display: flex;
@@ -599,10 +636,17 @@ h4 {
     padding: 60px 0 80px;
 }
 
-.section-badge {
-    display: inline-block;
-    padding: 10px 30px;
+.section-badge,
+.behind-scenes h2.section-badge,
+h2.wp-block-heading.section-badge {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     margin-bottom: 40px;
+    padding: 10px 30px;
+    text-align: center;
 }
 
 .gallery-grid {
@@ -1024,9 +1068,10 @@ h4 {
     line-height: 1.6;
 }
 
-.staff-member {
+.staff-member,
+.wp-block-columns.staff-member {
     display: flex;
-    align-items: center;
+    align-items: center !important;
     gap: 40px;
     margin-top: 50px;
 }
@@ -1117,20 +1162,136 @@ h4 {
 
 /* Acting Programs Specific Styles */
 .acting-programs-section .program-card {
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
-    border-radius: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .acting-programs-section .program-card h3 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
+    min-height: 3.4rem;
+    line-height: 1.3;
+    display: flex;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .acting-programs-section .program-card h3 {
+        min-height: auto;
+    }
 }
 
 .acting-programs-section .program-card img {
     border-radius: 0;
     margin-bottom: 15px;
+}
+
+/* --- PROGRAM CATALOG --- */
+
+.programs-intro {
+    max-width: 780px;
+    margin: 0 auto 40px;
+}
+
+.programs-intro h3 {
+    margin-bottom: 12px;
+}
+
+.programs-intro p {
+    margin: 0;
+    line-height: 1.7;
+}
+
+.acting-programs-section .program-catalog-grid,
+.wp-block-columns.program-catalog-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+.acting-programs-section .program-card.program-catalog-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+
+    background-color: white;
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.acting-programs-section .program-card.program-catalog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.13);
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-image,
+.acting-programs-section .program-catalog-card figure.program-catalog-image {
+    display: block;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px 12px 0 0;
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-image img,
+.acting-programs-section .program-catalog-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 190px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 0;
+    margin: 0;
+}
+
+.program-catalog-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 24px 20px 25px;
+    text-align: center;
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-body h3 {
+    margin: 0 0 22px;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.program-catalog-button {
+    min-width: 165px;
+    margin-top: auto;
+    text-align: center;
+}
+
+
+
+@media (max-width: 950px) {
+    .acting-programs-section .program-catalog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .acting-programs-section .program-catalog-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .program-catalog-card {
+        max-width: 430px;
+        margin: 0 auto;
+    }
 }
 
 .program-card img {
@@ -1326,9 +1487,11 @@ h4 {
     line-height: 1.6;
 }
 
-.vision-body {
+.vision-body,
+.vision-section .vision-body,
+.vision-section p.vision-body {
     color: #333333;
-    text-align: left;
+    text-align: center;
     line-height: 1.6;
     margin-bottom: 20px;
 }
@@ -1525,6 +1688,59 @@ h4 {
     object-fit: cover;
     object-position: center top;
     display: block;
+}
+
+.past-productions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 28px 0 36px;
+}
+
+.past-production-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.past-production-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.past-production-card:hover img {
+    transform: scale(1.06);
+}
+
+.past-production-label {
+    display: block;
+    padding: 12px 10px;
+    background: #fff;
+    color: var(--primary-pink);
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.shows-hero-actions {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.show-date-tba {
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary-pink);
 }
 
 
@@ -1743,66 +1959,110 @@ h4 {
     display: block;
 }
 
-.play-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    font-size: 3rem;
-    pointer-events: none;
+/* =========================================================
+   YOUTUBE VIDEO GALLERY
+   ========================================================= */
+
+.video-gallery-section {
+    padding: 80px 0;
 }
 
+.video-gallery-intro {
+    max-width: 700px;
+    margin: 0 auto 40px;
+    color: #333333;
+    line-height: 1.7;
+}
+
+.youtube-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.youtube-card {
+    min-width: 0;
+    overflow: hidden;
+
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.youtube-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 13px 28px rgba(0, 0, 0, 0.17);
+}
+
+.youtube-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #111111;
+}
+
+.youtube-wrapper iframe {
+    position: absolute;
+    inset: 0;
+
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+}
+
+.youtube-channel-cta {
+    margin-top: 40px;
+}
+
+.youtube-channel-cta .btn {
+    min-width: 230px;
+}
+
+
+/* --- RESPONSIVE LAYOUT --- */
+
 @media (max-width: 900px) {
+    .youtube-grid {
+        grid-template-columns: 1fr;
+        max-width: 700px;
+    }
+}
 
-    .mission-content,
-    .staff-member,
-    .announcement-content,
-    .musical-theater-content,
-    .registration-item,
-    .overview-row {
-        flex-direction: column !important;
-        text-align: center;
+@media (max-width: 600px) {
+    .video-gallery-section {
+        padding: 55px 0;
     }
 
-    .overview-row.reverse {
-        flex-direction: column !important;
+    .video-gallery-intro {
+        margin-bottom: 30px;
+        padding: 0 8px;
     }
 
-    .musical-text,
-    .overview-text {
-        text-align: center;
+    .youtube-grid {
+        gap: 20px;
     }
 
-    .staff-img-col {
-        flex: 0 0 auto;
-        margin-bottom: 20px;
+    .youtube-card {
+        border-radius: 8px;
     }
 
-    .reg-img {
+    .youtube-channel-cta {
+        margin-top: 30px;
+    }
+
+    .youtube-channel-cta .btn {
         width: 100%;
-    }
-
-    .bts-grid,
-    .announcements-grid,
-    .gallery-grid-new,
-    .video-grid,
-    .news-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .spotlight-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-
-    .update-row {
-        flex-direction: column;
-        text-align: center;
+        max-width: 320px;
+        min-width: 0;
     }
 }
 
@@ -2228,17 +2488,17 @@ h4 {
         flex-direction: column;
         gap: 30px;
     }
-    
+
     .policy-list {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .indicators-grid {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .eligibility-card {
         padding: 30px 20px;
     }
@@ -2327,26 +2587,28 @@ h4 {
 }
 
 @media (max-width: 768px) {
-    .testimonial-item, .testimonial-item.reverse {
+
+    .testimonial-item,
+    .testimonial-item.reverse {
         flex-direction: column !important;
         text-align: center;
         padding: 25px 20px;
     }
-    
+
     .testimonial-text-wrapper {
         text-align: center;
     }
-    
+
     .testimonial-img-wrapper {
         margin: 0 auto 15px;
         flex: 0 0 auto;
     }
-    
+
     .sci-grid {
         flex-direction: column;
         gap: 30px;
     }
-    
+
     .sci-column {
         padding: 25px 20px;
     }
@@ -2388,6 +2650,123 @@ h4 {
     object-position: center top;
 }
 
+/* =========================================================
+   COSTUME COLLECTIONS
+   ========================================================= */
+
+.costume-gallery-instructions {
+    max-width: 700px;
+    margin: 0 auto 35px;
+}
+
+.costume-gallery-trigger {
+    position: relative;
+    cursor: pointer;
+}
+
+.costume-gallery-label {
+    display: block;
+    padding: 12px 15px;
+    color: var(--primary-purple);
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.costume-gallery-label i {
+    margin-right: 6px;
+}
+
+.other-costume-shows {
+    max-width: 850px;
+    margin: 55px auto 0;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);
+}
+
+.other-costume-shows h3 {
+    margin-bottom: 12px;
+    color: var(--primary-purple);
+}
+
+.other-costume-shows-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 18px;
+    margin: 22px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.other-costume-shows-list li {
+    padding: 9px 16px;
+    background: var(--text-light);
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.costume-lightbox-dialog {
+    width: min(1100px, 94vw);
+    max-width: 1100px;
+    padding: 50px 70px 35px;
+}
+
+.costume-lightbox-title {
+    margin: 0 45px 25px;
+    color: white;
+    text-align: center;
+}
+
+.costume-lightbox-figure {
+    margin: 0;
+    text-align: center;
+}
+
+.costume-lightbox-figure img {
+    display: block;
+    max-width: 100%;
+    max-height: 72vh;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.costume-lightbox-figure figcaption {
+    margin-top: 12px;
+    color: white;
+}
+
+.costume-lightbox-counter {
+    margin: 18px 0 0;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .costume-lightbox-dialog {
+        padding: 55px 45px 25px;
+    }
+
+    .costume-lightbox-title {
+        margin-right: 20px;
+        margin-left: 20px;
+        font-size: 1.35rem;
+    }
+
+    .other-costume-shows {
+        padding: 24px 18px;
+    }
+
+    .other-costume-shows-list {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
 /* --- SHOW DETAILS PAGE STYLES --- */
 .show-details-section {
     padding: 60px 0 80px;
@@ -2420,7 +2799,8 @@ h4 {
 
 .show-details-sidebar {
     position: sticky;
-    top: 150px; /* offset for nav */
+    top: 150px;
+    /* offset for nav */
     align-self: start;
 }
 
@@ -2433,14 +2813,17 @@ h4 {
     text-align: left;
 }
 
-.sidebar-card img {
+.sidebar-card img,
+.sidebar-card img.show-event-poster {
     width: 100%;
     height: auto;
+    max-height: 340px;
     border-radius: 6px;
     margin-bottom: 25px;
     display: block;
-    object-fit: cover;
-    object-position: center top;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
 }
 
 .sidebar-card h3 {
@@ -2519,14 +2902,3283 @@ h4 {
     font-size: 1.05rem;
 }
 
+
+
 @media (max-width: 900px) {
     .show-details-grid {
         grid-template-columns: 1fr;
         gap: 40px;
     }
-    
+
     .show-details-sidebar {
         position: relative;
         top: 0;
+    }
+}
+
+/* =========================================================
+   EXTRACTED INLINE STYLES
+   Generated during project cleanup so HTML contains no inline CSS.
+   ========================================================= */
+
+.u-inline-001 {
+    font-size: 3rem !important;
+}
+
+.u-inline-002 {
+    font-size: 3.5rem !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-003 {
+    font-size: 1.2rem !important;
+    color: #666 !important;
+}
+
+.u-inline-004 {
+    padding: 40px 0 !important;
+    border-top: 1px solid #eee !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+.u-inline-005 {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+}
+
+.u-inline-006 {
+    font-size: 1.15rem !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+    margin-bottom: 25px !important;
+}
+
+.u-inline-007 {
+    font-weight: 700 !important;
+    color: var(--primary-pink) !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 25px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+.u-inline-008 {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    flex-wrap: wrap !important;
+}
+
+.u-inline-009 {
+    border-radius: 30px !important;
+    font-weight: bold !important;
+    padding: 15px 30px !important;
+}
+
+.u-inline-010 {
+    padding: 40px 0 80px 0 !important;
+}
+
+.u-inline-011 {
+    font-size: 1.15rem !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+    margin-bottom: 0 !important;
+}
+
+.u-inline-012 {
+    padding-top: 30px !important;
+}
+
+.u-inline-013 {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+.u-inline-014 {
+    color: var(--primary-pink) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.u-inline-015 {
+    padding-top: 20px !important;
+}
+
+.u-inline-016 {
+    font-size: 2.2rem !important;
+    line-height: 1.3 !important;
+}
+
+.u-inline-017 {
+    color: var(--primary-pink) !important;
+    font-size: 3.5rem !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-018 {
+    width: 100% !important;
+    height: 350px !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+}
+
+.u-inline-019 {
+    color: var(--primary-green) !important;
+    font-size: 2rem !important;
+    margin-bottom: 15px !important;
+}
+
+.u-inline-020 {
+    font-size: 1.2rem !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+}
+
+.u-inline-021 {
+    padding: 80px 0 !important;
+}
+
+.u-inline-022 {
+    color: white !important;
+    font-size: 2.5rem !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-023 {
+    background-color: #F8F8F8 !important;
+    padding: 60px 0 !important;
+}
+
+.u-inline-024 {
+    color: var(--primary-pink) !important;
+    font-size: 2.5rem !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-025 {
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+    color: #1E1E1E !important;
+}
+
+.u-inline-026 { pointer-events: none !important; cursor: default !important; }
+
+.u-inline-027 {
+    background: white !important;
+    padding: 60px 0 20px 0 !important;
+}
+
+.u-inline-028 {
+    color: #1E1E1E !important;
+}
+
+.u-inline-029 {
+    padding: 60px 0 !important;
+    background: white !important;
+}
+
+.u-inline-030 {
+    color: var(--primary-pink) !important;
+    font-size: 2.5rem !important;
+}
+
+.u-inline-031 {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    text-decoration: none !important;
+}
+
+.u-inline-032 {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.15) 100%) !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+.u-inline-033 {
+    margin: 0 !important;
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    color: white !important;
+    letter-spacing: 1px !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+.u-inline-034 {
+    margin: 5px 0 0 !important;
+    font-size: 0.85rem !important;
+    opacity: 0.95 !important;
+    color: var(--primary-pink) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.u-inline-035 {
+    text-decoration: none !important;
+    display: block !important;
+}
+
+.u-inline-036 {
+    cursor: pointer !important;
+}
+
+.u-inline-037 {
+    margin-top: 50px !important;
+}
+
+.u-inline-038 {
+    margin-bottom: 20px !important;
+    font-weight: bold !important;
+    color: var(--primary-purple) !important;
+}
+
+.u-inline-039 {
+    margin-top: 30px !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    color: #555 !important;
+}
+
+.u-inline-040 {
+    font-weight: 700 !important;
+    color: var(--primary-purple) !important;
+    margin-top: 15px !important;
+}
+
+.u-inline-041 {
+    padding-top: 40px !important;
+}
+
+.u-inline-042 {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.u-inline-043 {
+    color: #333333 !important;
+    font-size: 2rem !important;
+}
+
+.u-inline-044 {
+    font-size: 1.1rem !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+}
+
+.u-inline-045 {
+    color: white !important;
+    font-size: 2.5rem !important;
+}
+
+.u-inline-046 {
+    color: white !important;
+}
+
+.u-inline-047 {
+    color: var(--primary-green) !important;
+    font-size: 2.5rem !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-048 {
+    font-size: 2.5rem !important;
+    text-transform: uppercase !important;
+    color: #1E1E1E !important;
+}
+
+.u-inline-049 {
+    border-radius: 30px !important;
+    display: inline-block !important;
+}
+
+.u-inline-050 {
+    margin-top: 15px !important;
+}
+
+.u-inline-051 {
+    color: var(--primary-purple) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+.u-inline-052 {
+    padding: 60px 0 !important;
+    border-top: 1px solid #ddd !important;
+}
+
+.u-inline-053 {
+    color: var(--primary-purple) !important;
+    max-width: 800px !important;
+    margin: 0 auto 30px !important;
+    text-transform: none !important;
+    font-size: 1.15rem !important;
+}
+
+.u-inline-054 {
+    border-top: 5px solid var(--primary-pink) !important;
+}
+
+.u-inline-055 {
+    color: var(--primary-purple) !important;
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-056 {
+    color: #333 !important;
+    margin-left: 20px !important;
+}
+
+.u-inline-057 {
+    list-style-type: disc !important;
+    margin-left: 25px !important;
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+}
+
+.u-inline-058 {
+    border-top: 5px solid var(--primary-green) !important;
+}
+
+.u-inline-059 {
+    color: #27c156 !important;
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+
+.u-inline-060 {
+    color: var(--primary-pink) !important;
+}
+
+.u-inline-061 {
+    margin-top: 25px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    color: var(--primary-purple) !important;
+}
+
+.u-inline-062 {
+    color: white !important;
+    margin-top: 25px !important;
+}
+
+.u-inline-063 {
+    width: 100% !important;
+    margin: 18px 0 !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+/* =========================================================
+   FALL 2026–2027 PROGRAM SCHEDULE
+   ========================================================= */
+
+.fall-schedule-section {
+    padding: 80px 0;
+    background:
+        linear-gradient(
+            180deg,
+            #fff8fc 0%,
+            #fdf1f8 100%
+        );
+}
+
+.schedule-heading {
+    max-width: 850px;
+    margin: 0 auto 30px;
+}
+
+.schedule-season-label {
+    margin-bottom: 4px;
+    color: var(--primary-pink);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.schedule-heading h2 {
+    margin-bottom: 6px;
+    color: var(--text-dark);
+    font-size: 2.5rem;
+}
+
+.schedule-tagline {
+    margin-bottom: 18px;
+    color: var(--primary-purple);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.schedule-tagline span {
+    padding: 0 7px;
+}
+
+.schedule-tagline .tag-sing,
+.schedule-tagline .tag-act {
+    color: var(--primary-blue);
+}
+
+.schedule-tagline .tag-dance {
+    color: var(--primary-pink);
+}
+
+.schedule-tagline .tag-perform {
+    color: var(--primary-purple);
+}
+
+.schedule-intro {
+    color: #555555;
+    line-height: 1.7;
+}
+
+
+/* --- CATEGORY KEY --- */
+
+.schedule-key {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 22px;
+    max-width: 1050px;
+    margin: 0 auto 35px;
+    padding: 14px 28px;
+    background: white;
+    border: 1px solid #d8d8d8;
+    border-radius: 40px;
+}
+
+.schedule-key-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #444444;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.schedule-key-dot {
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.company-dot {
+    background: #1e1e1e;
+}
+
+.theater-dot {
+    background: var(--primary-pink);
+}
+
+.combo-dot {
+    background: var(--primary-blue);
+}
+
+.teen-dot {
+    background: var(--primary-purple);
+}
+
+.rehearsal-dot {
+    background: #b78943;
+}
+
+.hiphop-dot {
+    background: var(--primary-green);
+}
+
+
+/* --- WEEKLY GRID --- */
+
+.weekly-schedule-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.schedule-day {
+    min-width: 0;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid #ead8e4;
+    border-radius: 15px;
+    box-shadow: 0 8px 22px rgba(66, 35, 53, 0.06);
+}
+
+.schedule-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 74px;
+    padding: 15px 17px;
+    color: white;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary-pink),
+            var(--primary-purple)
+        );
+}
+
+.schedule-day-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.15rem;
+    text-transform: uppercase;
+}
+
+.schedule-day-header p {
+    margin: 2px 0 0;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.schedule-day-header i {
+    font-size: 1.3rem;
+    opacity: 0.85;
+}
+
+.schedule-class-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 10px;
+}
+
+.schedule-class {
+    position: relative;
+    padding: 13px 12px 13px 16px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid #ecdde6;
+    border-radius: 9px;
+}
+
+.schedule-class::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: var(--primary-pink);
+}
+
+.schedule-company::before {
+    background: #1e1e1e;
+}
+
+.schedule-theater::before {
+    background: var(--primary-pink);
+}
+
+.schedule-combo::before {
+    background: var(--primary-blue);
+}
+
+.schedule-teen::before {
+    background: var(--primary-purple);
+}
+
+.schedule-rehearsal::before {
+    background: #b78943;
+}
+
+.schedule-hiphop::before {
+    background: var(--primary-green);
+}
+
+.schedule-time {
+    margin: 0 0 4px;
+    color: var(--primary-purple);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.schedule-class h4 {
+    margin: 0 0 5px;
+    color: var(--text-dark);
+    font-size: 0.86rem;
+    line-height: 1.3;
+}
+
+.schedule-class p:not(.schedule-time) {
+    margin: 0;
+    color: #555555;
+    font-size: 0.74rem;
+    line-height: 1.4;
+}
+
+.schedule-class .schedule-teacher {
+    margin-top: 4px;
+    color: #777777;
+    font-style: italic;
+}
+
+.schedule-new-badge {
+    display: inline-block;
+    margin: 0 0 6px;
+    padding: 2px 8px;
+    color: white;
+    background: var(--primary-green);
+    border-radius: 20px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   SCHEDULE DETAILS
+   ========================================================= */
+
+.schedule-details-section {
+    padding: 75px 0;
+    background: #ffffff;
+}
+
+.schedule-details-heading {
+    margin-bottom: 35px;
+}
+
+.schedule-details-heading h2 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 2.4rem;
+}
+
+.schedule-details-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.schedule-detail-card {
+    padding: 22px;
+    background: #fff8fc;
+    border: 1px solid #eed9e7;
+    border-radius: 12px;
+}
+
+.schedule-detail-age {
+    margin: 0 0 5px;
+    color: var(--primary-purple);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.schedule-detail-card h3 {
+    margin: 0 0 9px;
+    color: var(--primary-pink);
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+.schedule-detail-card > p:last-child {
+    margin: 0;
+    color: #4d4d4d;
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.schedule-detail-featured {
+    color: white;
+    background: var(--primary-pink);
+    border-color: transparent;
+}
+
+.schedule-detail-featured .schedule-detail-age,
+.schedule-detail-featured h3,
+.schedule-detail-featured > p:last-child {
+    color: white;
+}
+
+
+/* --- IMPORTANT DATES --- */
+
+.schedule-dates-banner {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+    align-items: center;
+    margin-top: 35px;
+    padding: 28px 32px;
+    color: white;
+    background: var(--text-dark);
+    border-radius: 13px;
+}
+
+.schedule-dates-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.schedule-dates-heading i {
+    color: var(--primary-pink);
+    font-size: 2rem;
+}
+
+.schedule-dates-heading p {
+    margin: 0;
+    color: var(--primary-pink);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.schedule-dates-heading h3 {
+    margin: 2px 0 0;
+    color: white;
+    font-size: 1.15rem;
+}
+
+.schedule-date-list {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.schedule-date-item {
+    padding-left: 16px;
+    border-left: 2px solid var(--primary-pink);
+}
+
+.schedule-date-item strong,
+.schedule-date-item span {
+    display: block;
+}
+
+.schedule-date-item strong {
+    color: white;
+    font-size: 0.82rem;
+}
+
+.schedule-date-item span {
+    margin-top: 3px;
+    color: #dddddd;
+    font-size: 0.75rem;
+}
+
+
+/* --- SCHEDULE CONTACT --- */
+
+.schedule-contact {
+    max-width: 780px;
+    margin: 65px auto 0;
+}
+
+.schedule-contact h2 {
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.schedule-contact p {
+    margin-bottom: 25px;
+    color: #555555;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   SCHEDULE RESPONSIVE LAYOUT
+   ========================================================= */
+
+@media (max-width: 1150px) {
+    .weekly-schedule-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .schedule-details-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .weekly-schedule-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .schedule-details-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .schedule-dates-banner {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .fall-schedule-section,
+    .schedule-details-section {
+        padding: 55px 0;
+    }
+
+    .schedule-heading h2,
+    .schedule-details-heading h2 {
+        font-size: 1.8rem;
+    }
+
+    .schedule-key {
+        justify-content: flex-start;
+        padding: 16px;
+    }
+
+    .weekly-schedule-grid,
+    .schedule-details-grid,
+    .schedule-date-list {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-day {
+        max-width: 440px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .schedule-class h4 {
+        font-size: 0.95rem;
+    }
+
+    .schedule-class p:not(.schedule-time) {
+        font-size: 0.82rem;
+    }
+
+    .schedule-dates-banner {
+        padding: 25px 20px;
+    }
+
+    .schedule-date-item {
+        padding: 10px 0 10px 14px;
+    }
+}
+
+
+/* Recreational Dance class grid */
+.recreational-class-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+}
+
+.recreational-class-grid .program-card:last-child:nth-child(3n + 1) {
+    grid-column: 2;
+}
+
+@media (max-width: 900px) {
+    .recreational-class-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .recreational-class-grid .program-card:last-child:nth-child(3n + 1) {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .recreational-class-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   GIVE KIDS A CHANCE APPLICATION CTA
+   ========================================================= */
+
+.gkac-application-section {
+    padding: 55px 0;
+}
+
+.gkac-application-box {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 25px;
+
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 30px 35px;
+
+    background: linear-gradient(
+        135deg,
+        rgba(233, 91, 175, 0.10),
+        rgba(123, 198, 245, 0.16)
+    );
+
+    border: 1px solid rgba(233, 91, 175, 0.22);
+    border-left: 6px solid var(--primary-pink);
+    border-radius: 12px;
+
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.gkac-application-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 64px;
+    height: 64px;
+
+    color: white;
+    background: var(--primary-pink);
+    border-radius: 50%;
+
+    font-size: 1.6rem;
+}
+
+.gkac-application-content h2 {
+    margin: 0 0 8px;
+    color: var(--text-dark);
+    font-size: 1.65rem;
+    text-transform: none;
+}
+
+.gkac-application-content p {
+    margin: 0;
+    color: #444444;
+    line-height: 1.65;
+}
+
+.gkac-application-action {
+    text-align: right;
+}
+
+.gkac-application-button {
+    max-width: 280px;
+    padding: 14px 24px;
+
+    color: white;
+    background: var(--primary-pink);
+
+    border-radius: 30px;
+
+    line-height: 1.3;
+    text-align: center;
+}
+
+.gkac-application-button:hover {
+    color: white;
+    background: var(--primary-purple);
+}
+
+
+/* --- RESPONSIVE --- */
+
+@media (max-width: 850px) {
+
+    .gkac-application-box {
+        grid-template-columns: auto 1fr;
+    }
+
+    .gkac-application-action {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
+    .gkac-application-button {
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .gkac-application-section {
+        padding: 40px 0;
+    }
+
+    .gkac-application-box {
+        grid-template-columns: 1fr;
+        gap: 18px;
+
+        padding: 28px 22px;
+
+        text-align: center;
+    }
+
+    .gkac-application-icon {
+        margin: 0 auto;
+    }
+
+    .gkac-application-action {
+        grid-column: auto;
+    }
+
+    .gkac-application-button {
+        display: block;
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   WORDPRESS BLOCK THEME COMPATIBILITY
+   ========================================================= */
+
+html :where(.wp-site-blocks) > * {
+    margin-block-start: 0;
+}
+
+.wp-site-blocks {
+    padding: 0;
+}
+
+.wp-block-template-part {
+    width: 100%;
+}
+
+main.wp-block-group.alignfull,
+.wp-block-post-content.alignfull {
+    max-width: none;
+    width: 100%;
+}
+
+.wp-block-post-content > .alignfull,
+.wp-block-post-content > .wp-block-group.alignfull,
+.wp-block-post-content > .wp-block-cover.alignfull {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Restore lists inside page content (global reset zeroes padding). */
+.wp-block-list,
+.entry-content ul,
+.wp-block-post-content ul:not(.nav-links):not(.wp-block-navigation__container) {
+    padding-left: 1.25em;
+}
+
+.policy-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* Site logo / header */
+header.wp-block-template-part .top-nav,
+.wp-block-template-part .top-nav {
+    width: 100%;
+}
+
+.wp-block-site-logo {
+    line-height: 0;
+}
+
+/* Header logo: mockup 250px mark with negative margins (preview .nav-logo). */
+.top-nav .wp-block-site-logo img,
+.top-nav .wp-block-site-logo a img,
+.top-nav .custom-logo,
+.top-nav .nav-logo,
+header.wp-block-template-part .wp-block-site-logo img {
+    width: auto !important;
+    height: 250px !important;
+    max-height: none !important;
+    max-width: none !important;
+    margin-top: -55px !important;
+    margin-bottom: -55px !important;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.wp-block-site-logo img:hover,
+.nav-logo:hover {
+    transform: scale(1.03);
+}
+
+.wp-block-site-title {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Navigation block → mockup nav */
+.wp-block-navigation {
+    font-family: var(--font-main);
+}
+
+.wp-block-navigation ul,
+.wp-block-navigation__container {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 4px 8px;
+}
+
+.wp-block-navigation .wp-block-navigation-item__content,
+.wp-block-navigation a {
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    color: var(--text-dark) !important;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.wp-block-navigation .wp-block-navigation-item__content:hover,
+.wp-block-navigation a:hover,
+.wp-block-navigation .current-menu-item .wp-block-navigation-item__content {
+    color: var(--primary-pink) !important;
+    background-color: rgba(233, 30, 99, 0.08);
+}
+
+.wp-block-navigation__responsive-container.is-menu-open {
+    background: #fff;
+}
+
+.wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content {
+    font-size: 1.05rem;
+    padding: 12px 16px;
+}
+
+/* Cover / hero — match Janet’s home-hero-reference.png */
+.wp-block-cover.hero-cover {
+    min-height: calc(100svh - 140px);
+    padding: 70px 24px 56px;
+    align-items: center;
+}
+
+.wp-block-cover.hero-cover .wp-block-cover__background.has-background-dim:not([class*=-background-color]) {
+    opacity: 0.42;
+}
+
+.wp-block-cover.hero-cover .wp-block-cover__inner-container {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.hero-cover .hero-text-row.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
+    gap: 48px 56px !important;
+    align-items: stretch !important;
+    width: 100%;
+    margin: 0;
+}
+
+.hero-cover .hero-left,
+.hero-cover .hero-right,
+.hero-cover .hero-text-row > .wp-block-column {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: none !important;
+    gap: 28px;
+}
+
+.hero-cover h1.hero-title,
+.hero-cover .hero-left > .wp-block-heading,
+.hero-cover h1.wp-block-heading {
+    color: #fff !important;
+    font-size: clamp(2.55rem, 4.55vw, 3.85rem) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.08 !important;
+    text-transform: uppercase !important;
+    text-align: left !important;
+    margin: 0 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+}
+
+.hero-cover h1.hero-title .hero-title-line {
+    white-space: nowrap;
+}
+
+.hero-cover .hero-subtitle,
+.hero-cover .hero-right h2.wp-block-heading {
+    color: #fff !important;
+    text-transform: none !important;
+    font-size: clamp(1.28rem, 2vw, 1.65rem) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.3 !important;
+    text-align: right !important;
+    margin: 0 0 12px !important;
+}
+
+.hero-cover .hero-desc,
+.hero-cover p.hero-desc {
+    color: #fff !important;
+    font-size: clamp(1rem, 1.35vw, 1.15rem) !important;
+    font-weight: 500 !important;
+    line-height: 1.55 !important;
+    text-align: right !important;
+    margin: 0 0 auto !important;
+}
+
+.hero-cover .hero-cta,
+.hero-cover p.hero-cta,
+.hero-cover .hero-cta.wp-block-buttons {
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.hero-cover .hero-cta .wp-block-button,
+.hero-cover .hero-cta .wp-block-button.has-custom-width,
+.hero-cover .wp-block-button.btn-hero-large,
+.hero-cover .wp-block-button.btn-white-pink {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.hero-cover a.btn-hero-large,
+.hero-cover a.btn-white-pink,
+.hero-cover .hero-cta .wp-block-button__link {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+    background: #fff !important;
+    color: var(--hero-cta-pink) !important;
+    border: 2px solid var(--hero-cta-pink) !important;
+    border-radius: 4px !important;
+    padding: 22px 28px !important;
+    font-size: clamp(1.2rem, 1.8vw, 1.55rem) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    line-height: 1.1 !important;
+    text-decoration: none !important;
+}
+
+.hero-cover a.btn-hero-large:hover,
+.hero-cover a.btn-white-pink:hover,
+.hero-cover a.btn-hero-large:focus,
+.hero-cover a.btn-white-pink:focus,
+.hero-cover .hero-cta .wp-block-button__link:hover,
+.hero-cover .hero-cta .wp-block-button__link:focus {
+    background: var(--hero-cta-pink) !important;
+    color: #fff !important;
+    border-color: var(--hero-cta-pink) !important;
+}
+
+a.btn-hero-large,
+a.btn-white-pink,
+.wp-block-button.btn-hero-large .wp-block-button__link,
+.wp-block-button.btn-white-pink .wp-block-button__link {
+    background: #fff !important;
+    color: var(--hero-cta-pink) !important;
+    border: 2px solid var(--hero-cta-pink) !important;
+    padding: 20px 24px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    width: 100%;
+    text-align: center;
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+a.btn-hero-large:hover,
+a.btn-white-pink:hover,
+.wp-block-button.btn-hero-large .wp-block-button__link:hover,
+.wp-block-button.btn-white-pink .wp-block-button__link:hover {
+    background: var(--hero-cta-pink) !important;
+    color: #fff !important;
+    border-color: var(--hero-cta-pink) !important;
+}
+
+.wp-block-button .wp-block-button__link {
+    font-family: var(--font-main);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.wp-block-button.is-style-onstage-pink .wp-block-button__link,
+.wp-block-button.is-style-fill .wp-block-button__link {
+    background-color: var(--primary-pink);
+    color: #fff;
+}
+
+.wp-block-button.is-style-onstage-pink .wp-block-button__link:hover {
+    background-color: var(--primary-purple);
+}
+
+.wp-block-button.is-style-onstage-black .wp-block-button__link {
+    background-color: var(--text-dark);
+    color: #fff;
+    border-radius: 25px;
+    padding: 12px 30px;
+}
+
+.wp-block-button.is-style-onstage-pill .wp-block-button__link {
+    background-color: #E95BAF;
+    color: #fff;
+    border-radius: 30px;
+    padding: 12px 25px;
+}
+
+.wp-block-button.is-style-onstage-pill .wp-block-button__link:hover,
+.wp-block-button.is-style-onstage-pill .wp-block-button__link:focus {
+    background-color: var(--primary-purple);
+    color: #fff;
+}
+
+.btn.btn-pink:not(.btn-hero-large):not(.btn-white-pink) {
+    background-color: #E95BAF;
+    color: #fff;
+}
+
+.btn.btn-pink:not(.btn-hero-large):not(.btn-white-pink):hover,
+.btn.btn-pink:not(.btn-hero-large):not(.btn-white-pink):focus {
+    background-color: var(--primary-purple);
+    color: #fff;
+}
+
+.wp-block-button.is-style-onstage-blue .wp-block-button__link {
+    background-color: var(--primary-blue);
+    color: var(--text-dark);
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 0.8rem;
+}
+
+.wp-block-button.is-style-onstage-blue .wp-block-button__link:hover {
+    background-color: var(--primary-purple);
+    color: #fff;
+}
+
+/* Program / news cards as Gutenberg groups */
+.programs-grid > .wp-block-column,
+.wp-block-group.program-card {
+    background: #fff;
+}
+
+.wp-block-group.program-card img,
+.program-card .wp-block-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 4px;
+}
+
+.news-card .wp-block-image img,
+.news-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+.wp-block-query.event-list .wp-block-post-template,
+.event-list.wp-block-post-template {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 800px;
+    margin: 0 auto;
+    list-style: none;
+    padding: 0;
+}
+
+.wp-block-query.event-list .wp-block-post,
+.event-item.wp-block-group {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    background: #fff;
+}
+
+.wp-block-query.event-list .wp-block-post-featured-image img,
+.event-item img {
+    width: 250px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.wp-block-query.event-list .wp-block-post-title,
+.event-item .wp-block-post-title {
+    color: var(--primary-pink);
+    font-size: 1.2rem;
+}
+
+.wp-block-query.event-list .wp-block-post-title a {
+    color: var(--primary-pink);
+    text-decoration: none;
+}
+
+.onstage-show-meta {
+    font-weight: 700;
+    margin: 5px 0;
+}
+
+.onstage-show-venue {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.onstage-ticket-btn {
+    display: inline-block;
+    margin-top: 12px;
+}
+
+.gallery-grid .wp-block-image,
+.gallery-grid figure {
+    margin: 0;
+}
+
+.gallery-grid img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    object-position: center top;
+}
+
+.circle-img .wp-block-image,
+.circle-img figure {
+    margin: 0;
+    width: 200px;
+    height: 200px;
+}
+
+.circle-img img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.staff-img.wp-block-image img,
+.staff-img img {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.wp-block-image.footer-logo img,
+.footer-logo img,
+img.footer-logo,
+.site-footer .wp-block-site-logo img,
+.site-footer .custom-logo {
+    max-width: 350px;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    margin: -30px 20px -30px 0;
+}
+
+.social-icons .wp-block-social-links {
+    padding: 0;
+}
+
+.wp-block-social-links.is-style-logos-only .wp-block-social-link {
+    color: var(--text-dark);
+}
+
+.page-header h1,
+.page-header h1.wp-block-heading,
+h1.pink-text,
+h1.wp-block-heading.pink-text,
+h1.programs-page-title,
+.gallery-page-title {
+    color: var(--primary-pink);
+    font-size: clamp(2.5rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    text-transform: uppercase;
+}
+
+h2.pink-text,
+h2.wp-block-heading.pink-text,
+h2.programs-section-label,
+.acting-programs-section > h2.pink-text {
+    color: var(--primary-pink);
+    font-size: clamp(1.55rem, 3.2vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.bg-light-blue h2.white-text,
+.success-section h2,
+.vision-section h2 {
+    color: #fff;
+}
+
+.has-pink-color { color: var(--primary-pink) !important; }
+.has-blue-background-color { background-color: var(--primary-blue) !important; }
+.has-pink-background-color { background-color: var(--primary-pink) !important; }
+.has-green-color { color: var(--primary-green) !important; }
+.has-cream-background-color { background-color: var(--text-light) !important; }
+
+.youtube-wrapper,
+.wp-block-embed-youtube {
+    position: relative;
+}
+
+.youtube-card .wp-block-embed {
+    margin: 0;
+}
+
+.gallery-placeholder {
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+    color: #fff;
+    min-height: 220px;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.gallery-placeholder h3 {
+    color: #fff;
+    margin: 0;
+}
+
+.asset-note {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+    max-width: 720px;
+    margin: 0 auto 20px;
+}
+
+.eligibility-indicators {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 24px;
+    margin: 20px 0;
+}
+
+.eligibility-indicators li {
+    list-style: none;
+}
+
+@media (max-width: 900px) {
+    .top-nav .wp-block-site-logo img,
+    .top-nav .nav-logo,
+    .top-nav .custom-logo {
+        height: 140px !important;
+        max-height: none !important;
+        margin-top: -15px !important;
+        margin-bottom: -15px !important;
+    }
+
+    .hero-cover .hero-text-row.wp-block-columns {
+        grid-template-columns: 1fr !important;
+        gap: 28px !important;
+    }
+
+    .hero-cover h1.hero-title,
+    .hero-cover .hero-left > .wp-block-heading,
+    .hero-cover h1.wp-block-heading {
+        font-size: clamp(2.2rem, 9vw, 3rem) !important;
+        text-align: center !important;
+        letter-spacing: 0.04em !important;
+        overflow-wrap: normal !important;
+        word-break: normal !important;
+    }
+
+    .hero-cover h1.hero-title .hero-title-line {
+        white-space: normal;
+    }
+
+    .hero-cover .hero-subtitle,
+    .hero-cover .hero-desc,
+    .hero-cover .hero-right {
+        text-align: center !important;
+    }
+
+    .wp-block-query.event-list .wp-block-post,
+    .event-item.wp-block-group {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .wp-block-query.event-list .wp-block-post-featured-image img {
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+    }
+}
+
+/* Single show — two-column mockup (not a centered poster stack) */
+.single-show.show-details-section,
+.wp-block-group.single-show {
+    background-color: var(--text-light);
+    padding: 36px 20px 80px;
+    max-width: 1200px;
+}
+
+.single-show .show-back-link,
+.single-show .show-back-link a {
+    color: var(--primary-pink) !important;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.single-show .show-back-link a:hover {
+    text-decoration: underline;
+}
+
+.single-show .show-page-title,
+.single-show h1.wp-block-post-title {
+    color: var(--primary-pink) !important;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: clamp(2.2rem, 4.6vw, 3.25rem) !important;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    margin: 12px 0 36px;
+}
+
+.single-show .show-details-grid.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) !important;
+    gap: 48px !important;
+    align-items: start !important;
+}
+
+.single-show .about-show-heading,
+.single-show .show-details-main h2 {
+    color: var(--primary-purple) !important;
+    text-transform: uppercase;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-align: left;
+    margin: 0 0 20px;
+}
+
+.single-show .show-details-main,
+.single-show .show-details-main .wp-block-post-content,
+.single-show .show-details-main p {
+    text-align: left;
+    color: #333;
+}
+
+.single-show .show-details-main p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.single-show .show-event-card a {
+    color: var(--primary-pink);
+    font-weight: 700;
+}
+
+.single-show .wp-block-post-featured-image {
+    display: none;
+}
+
+.onstage-show-details {
+    max-width: 800px;
+    margin: 0 auto 30px;
+}
+
+.onstage-show-details p {
+    margin: 6px 0;
+}
+
+@media (max-width: 900px) {
+    .single-show .show-details-grid.wp-block-columns {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Editor canvas */
+.editor-styles-wrapper {
+    font-family: var(--font-main);
+    background: var(--text-light);
+}
+
+.editor-styles-wrapper h1 {
+    color: var(--primary-pink);
+}
+
+/* Inner-page headings: the mockup set global h1 to white (hero). Restore pink on pages. */
+.wp-block-post-content h1,
+.wp-block-post-title,
+.page-header h1,
+.page-header .wp-block-heading,
+h1.pink-text,
+main h1.wp-block-heading {
+    color: var(--primary-pink);
+}
+
+.hero-cover h1,
+.hero-cover h1.wp-block-heading,
+.hero h1 {
+    color: #ffffff !important;
+}
+
+.news-banner a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.wp-block-read-more {
+    display: inline-block;
+    background-color: var(--primary-blue);
+    color: var(--text-dark) !important;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.wp-block-read-more:hover {
+    background-color: var(--primary-purple);
+    color: #fff !important;
+}
+
+.policy-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.policy-list li {
+    position: relative;
+    padding: 6px 0 6px 1.6em;
+}
+
+.policy-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary-green);
+    font-weight: 800;
+}
+
+.other-costume-shows-list {
+    max-width: 420px;
+    margin: 12px auto 20px;
+}
+
+.wp-block-gallery.gallery-grid {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ------------------------------------------------------------------
+   Equal-height Home cards, cropped galleries, visible footer
+   Core Image uses height:auto; crop the FIGURE so object-fit wins.
+   ------------------------------------------------------------------ */
+
+.wp-block-group.programs .wp-block-columns.programs-grid,
+.programs .wp-block-columns.programs-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 30px;
+    align-items: stretch;
+    max-width: 1200px;
+    margin: 30px auto 0;
+}
+
+.wp-block-group.programs .wp-block-column.program-card,
+.programs .wp-block-column.program-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.programs .program-card h3.pink-text {
+    flex: 0 0 auto;
+    min-height: 3.3rem;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+
+.programs .program-card .program-card-copy {
+    flex: 1 1 auto;
+    min-height: 10.5em;
+}
+
+.programs .program-card .program-card-copy p {
+    margin: 0;
+}
+
+.programs .program-card .wp-block-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin: 12px 0 0;
+    overflow: hidden;
+    border-radius: 4px;
+    flex: 0 0 auto;
+}
+
+.programs .program-card .wp-block-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    margin: 0;
+    border-radius: 0;
+}
+
+.programs .program-card .wp-block-buttons {
+    margin-top: auto;
+    padding-top: 16px;
+    justify-content: center;
+    width: 100%;
+}
+
+.programs .program-card .program-card-action {
+    margin-top: auto;
+    padding-top: 16px;
+    width: 100%;
+    text-align: center;
+    flex: 0 0 auto;
+}
+
+.wp-block-group.happening-now .wp-block-columns.news-grid,
+.happening-now .wp-block-columns.news-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+    align-items: stretch;
+    width: 100%;
+}
+
+.happening-now .wp-block-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+}
+
+.happening-now .news-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    overflow: hidden;
+}
+
+.happening-now .news-card .wp-block-image {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin: 0;
+    overflow: hidden;
+}
+
+.happening-now .news-card .wp-block-image a {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
+.happening-now .news-card .wp-block-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    margin: 0;
+}
+
+.happening-now .news-card .news-banner {
+    margin: 0;
+    margin-top: auto;
+}
+
+.behind-scenes .wp-block-gallery.has-nested-images.gallery-grid,
+.wp-block-gallery.has-nested-images.gallery-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+}
+
+.behind-scenes .wp-block-gallery.gallery-grid > .wp-block-image,
+.behind-scenes .wp-block-gallery.gallery-grid > figure.wp-block-image,
+.wp-block-gallery.has-nested-images.gallery-grid > .wp-block-image {
+    width: 100% !important;
+    margin: 0 !important;
+    flex-grow: 0 !important;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+}
+
+.behind-scenes .wp-block-gallery.gallery-grid img,
+.wp-block-gallery.has-nested-images.gallery-grid img {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none;
+    aspect-ratio: auto;
+    object-fit: cover;
+    object-position: center top;
+}
+
+footer.wp-block-template-part,
+.site-footer,
+.wp-block-group.site-footer {
+    display: block;
+    width: 100%;
+    max-width: none;
+    background-color: var(--primary-blue);
+    color: var(--text-dark);
+}
+
+.site-footer .wp-block-columns.footer-content {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 30px;
+    align-items: start;
+    width: 100%;
+}
+
+.site-footer .footer-logo-col,
+.site-footer .footer-info-col,
+.site-footer .footer-social-col {
+    width: auto;
+}
+
+@media (max-width: 900px) {
+    .wp-block-group.programs .wp-block-columns.programs-grid,
+    .programs .wp-block-columns.programs-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wp-block-group.happening-now .wp-block-columns.news-grid,
+    .happening-now .wp-block-columns.news-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .behind-scenes .wp-block-gallery.has-nested-images.gallery-grid,
+    .wp-block-gallery.has-nested-images.gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .site-footer .wp-block-columns.footer-content {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .site-footer .footer-logo-col {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .wp-block-group.programs .wp-block-columns.programs-grid,
+    .programs .wp-block-columns.programs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .behind-scenes .wp-block-gallery.has-nested-images.gallery-grid,
+    .wp-block-gallery.has-nested-images.gallery-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   1.0.4 INNER-PAGE MOCKUP MATCH
+   Gallery, costumes, scholarships, shows, programs
+   ========================================================= */
+
+.photo-gallery-section,
+.costume-categories-section,
+.rental-form-cta-section,
+.shows-hero-section {
+    padding: 40px 20px 80px;
+}
+
+.gallery-page-header {
+    background: #fff;
+    padding-bottom: 0;
+}
+
+.gallery-page-title,
+.wp-block-post-content h1.gallery-page-title {
+    color: #1e1e1e !important;
+}
+
+.photo-gallery-section {
+    background: #fff;
+    padding-top: 10px;
+}
+
+.show-gallery-grid.wp-block-columns,
+.wp-block-columns.gallery-grid-new.show-gallery-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+    align-items: stretch !important;
+}
+
+.has-text-align-center {
+    text-align: center;
+}
+
+.show-gallery-card.wp-block-cover,
+.wp-block-cover.show-gallery-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28px;
+    overflow: hidden;
+    min-height: 280px !important;
+    background-size: cover;
+    background-position: center;
+}
+
+.show-gallery-card .wp-block-cover__image-background,
+.show-gallery-card img.wp-block-cover__image-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.show-gallery-card .wp-block-cover__background {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.show-gallery-card .has-background-dim {
+    background-color: rgba(30, 30, 30, 0.5);
+}
+
+.show-gallery-card .wp-block-cover__inner-container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    padding: 24px 16px;
+}
+
+.show-gallery-card h3,
+.show-gallery-card .wp-block-heading {
+    color: #fff !important;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.show-gallery-card .view-gallery-link,
+.view-gallery-link {
+    color: var(--primary-pink) !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.video-gallery-section.bg-light-blue {
+    background-color: var(--primary-blue);
+}
+
+.video-gallery-section .youtube-grid.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 28px !important;
+    max-width: 1100px;
+    margin: 24px auto 0;
+}
+
+.youtube-card,
+.wp-block-group.youtube-card {
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+.youtube-card .wp-block-embed,
+.youtube-card figure {
+    margin: 0;
+}
+
+.costume-overview-section .overview-row.wp-block-columns {
+    align-items: center !important;
+    gap: 40px;
+    margin: 40px 0;
+}
+
+.costume-overview-section .overview-image img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.costume-overview-section h2.green-text {
+    color: var(--primary-green);
+    text-shadow: none;
+}
+
+.costume-categories-section {
+    background-color: var(--primary-blue);
+    padding-top: 70px;
+}
+
+.costume-categories-section h2.white-text,
+.costume-categories-section p.white-text {
+    color: #fff;
+}
+
+.costume-categories-grid.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 28px !important;
+    margin-top: 36px;
+}
+
+.costume-categories-grid .category-card,
+.wp-block-column.category-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 18px 26px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.costume-categories-grid .category-title {
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.costume-categories-grid .category-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.view-collection-link,
+.view-collection-link a,
+.costume-gallery-label,
+.costume-gallery-label a {
+    color: var(--primary-purple);
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+}
+
+.view-collection-link a:hover,
+.costume-gallery-label:hover {
+    color: var(--primary-pink);
+}
+
+.other-costume-shows {
+    max-width: 920px;
+}
+
+.other-costume-shows-list,
+ul.wp-block-list.other-costume-shows-list {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 12px;
+    max-width: none;
+    margin: 22px auto;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.other-costume-shows-list li {
+    padding: 9px 18px;
+    background: #ececec;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.rental-form-cta-section {
+    background: #fff;
+    padding: 80px 20px;
+}
+
+.rental-form-cta-section h2 {
+    color: var(--primary-pink);
+}
+
+.wp-block-button.is-style-onstage-green .wp-block-button__link {
+    background-color: var(--primary-green);
+    color: #fff;
+    border-radius: 30px;
+    padding: 15px 34px;
+}
+
+.wp-block-button.is-style-onstage-green .wp-block-button__link:hover {
+    background-color: #27c156;
+    color: #fff;
+}
+
+.wp-block-button.is-style-onstage-white-purple .wp-block-button__link {
+    background-color: #fff;
+    color: var(--primary-purple);
+    border-radius: 30px;
+    padding: 14px 32px;
+}
+
+.wp-block-button.is-style-onstage-white-purple .wp-block-button__link:hover {
+    background-color: transparent;
+    color: #fff;
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+.scholarship-header,
+.scholarship-intro,
+.policies-section {
+    background: #ececec;
+}
+
+.scholarship-intro {
+    padding-top: 10px;
+}
+
+.scholarship-image img {
+    border-radius: 10px;
+    box-shadow: 14px 14px 0 var(--primary-pink);
+}
+
+.policy-card {
+    border-top: 5px solid var(--primary-pink);
+}
+
+.policy-list,
+ul.wp-block-list.policy-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 36px;
+    list-style: none !important;
+    padding: 0 0 16px !important;
+    margin: 20px 0 28px;
+}
+
+.policy-list li {
+    position: relative;
+    padding: 4px 0 4px 36px;
+    font-weight: 600;
+}
+
+.policy-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-green);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 22px;
+    text-align: center;
+}
+
+.scholarship-footnote {
+    font-weight: 700;
+}
+
+.eligibility-section.bg-light-blue {
+    background-color: var(--primary-blue);
+}
+
+.eligibility-card {
+    border-left: none;
+    max-width: 900px;
+}
+
+.eligibility-card h2 {
+    color: var(--text-dark);
+}
+
+.eligibility-subhead {
+    color: #777;
+    font-size: 0.95rem;
+}
+
+.eligibility-indicators,
+ul.wp-block-list.eligibility-indicators {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 24px 0 8px;
+}
+
+.eligibility-indicators li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ececec;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-weight: 700;
+}
+
+.eligibility-indicators li::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background: #fff;
+    border: 2px solid #cfcfcf;
+    border-radius: 3px;
+}
+
+.app-cta-box,
+.wp-block-group.app-cta-box {
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%);
+    color: #fff;
+    padding: 42px 32px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 36px;
+}
+
+.app-cta-box h3,
+.app-cta-box .wp-block-heading {
+    color: #fff !important;
+}
+
+.app-cta-box p {
+    color: #fff;
+}
+
+.shows-hero-row.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center !important;
+    gap: 40px !important;
+}
+
+.shows-hero-section .shows-hero-photo img,
+.shows-hero-section .shows-hero-photo .wp-block-image img {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+.shows-page-title,
+h1.shows-page-title {
+    color: #E95BAF !important;
+    font-size: clamp(2.5rem, 5vw, 3rem) !important;
+    font-weight: 800;
+}
+
+.shows-section-heading,
+h2.shows-section-heading {
+    color: #1e1e1e;
+    font-size: clamp(1.55rem, 3.2vw, 2.2rem) !important;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+h2.shows-section-heading.pink-text {
+    color: #E95BAF !important;
+}
+
+.buy-tickets-heading,
+.buy-tickets-section h2.green-text {
+    text-align: left;
+    color: #38E86B !important;
+    text-shadow: none;
+    font-size: clamp(1.55rem, 3.2vw, 2.2rem) !important;
+    font-weight: 800;
+}
+
+.buy-tickets-section .wp-block-query.event-list .wp-block-post-template {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 50px !important;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.buy-tickets-section .wp-block-post-template > .wp-block-post,
+.buy-tickets-section .wp-block-post-template > li {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0;
+}
+
+.buy-tickets-section .event-item.buy-tickets-row,
+.buy-tickets-section .wp-block-group.buy-tickets-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 40px;
+    align-items: start;
+    background: transparent;
+    width: 100%;
+}
+
+.buy-tickets-section .buy-tickets-text .wp-block-post-title,
+.buy-tickets-section .buy-tickets-text .wp-block-post-title a {
+    color: #1e1e1e !important;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.buy-tickets-section .wp-block-post-featured-image,
+.buy-tickets-section .wp-block-post-featured-image.buy-tickets-poster {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    min-height: 300px;
+    height: 300px;
+    background: #d9d9d9;
+}
+
+.buy-tickets-section .wp-block-post-featured-image a {
+    display: block;
+    width: 100%;
+    height: 300px;
+    background: #fff;
+}
+
+.buy-tickets-section .wp-block-post-featured-image img {
+    width: 100% !important;
+    height: 300px !important;
+    max-height: 300px !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    background: #fff;
+    border-radius: 0;
+}
+
+.buy-tickets-section .wp-block-read-more {
+    display: inline-block;
+    margin-top: 15px;
+    background-color: #81D4FA;
+    color: #1e1e1e !important;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.buy-tickets-section .wp-block-read-more:hover {
+    background-color: var(--primary-purple);
+    color: #fff !important;
+}
+
+.past-productions-grid,
+.past-productions-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin: 28px 0 36px;
+}
+
+.past-production-thumb {
+    display: block;
+    overflow: hidden;
+}
+
+.past-production-thumb img,
+.past-productions-gallery img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-image img,
+.program-catalog-card img {
+    width: 100%;
+    height: 100%;
+    min-height: 190px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 0;
+}
+
+.schedule-day-header--blue {
+    background: #4EB6E8;
+}
+
+.schedule-day-header--pink {
+    background: var(--primary-pink);
+}
+
+.schedule-day-header--purple {
+    background: var(--primary-purple);
+}
+
+.schedule-details-grid.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    margin-bottom: 18px;
+}
+
+.wp-block-column.schedule-detail-card {
+    padding: 22px;
+    background: #fff8fc;
+    border: 1px solid #eed9e7;
+    border-radius: 12px;
+}
+
+.wp-block-column.schedule-detail-featured {
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+    border-color: transparent;
+}
+
+.wp-block-column.schedule-detail-featured .schedule-detail-age,
+.wp-block-column.schedule-detail-featured h3,
+.wp-block-column.schedule-detail-featured p {
+    color: #fff;
+}
+
+.gkac-application-box.wp-block-group {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 25px;
+}
+
+.cta-buttons.wp-block-buttons {
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .show-gallery-grid.wp-block-columns,
+    .costume-categories-grid.wp-block-columns,
+    .schedule-details-grid.wp-block-columns,
+    .past-productions-gallery.wp-block-gallery.has-nested-images {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .video-gallery-section .youtube-grid.wp-block-columns,
+    .buy-tickets-section .event-item.buy-tickets-row,
+    .policy-list,
+    .eligibility-indicators,
+    form#eligibilityForm,
+    .eligibility-form,
+    .gkac-application-box.wp-block-group {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .show-gallery-grid.wp-block-columns,
+    .costume-categories-grid.wp-block-columns,
+    .schedule-details-grid.wp-block-columns,
+    .past-productions-gallery.wp-block-gallery.has-nested-images {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* --- 1.0.5 mockup color + Local layout lock --- */
+header.wp-block-template-part,
+.wp-site-blocks > header {
+    display: block !important;
+    position: relative;
+    z-index: 20;
+    background: #fff;
+    overflow: visible;
+}
+
+.top-nav,
+header.wp-block-template-part .top-nav {
+    display: block !important;
+    background: #fff;
+    overflow: visible;
+    z-index: 20;
+}
+
+.hero-cover .wp-block-button.is-style-onstage-pink,
+.hero-cover .wp-block-button.btn-hero-large,
+.hero-cover .wp-block-button.btn-white-pink {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.wp-block-button.is-style-onstage-pink.btn-hero-large .wp-block-button__link,
+.wp-block-button.is-style-onstage-pink.btn-white-pink .wp-block-button__link,
+.wp-block-button.btn-white-pink .wp-block-button__link,
+.wp-block-button.btn-hero-large .wp-block-button__link,
+.hero-cover a.btn-hero-large,
+.hero-cover a.btn-white-pink {
+    background: #fff !important;
+    color: var(--hero-cta-pink) !important;
+    border: 2px solid var(--hero-cta-pink) !important;
+    border-radius: 4px !important;
+}
+
+.wp-block-button.is-style-onstage-pink.btn-hero-large .wp-block-button__link:hover,
+.wp-block-button.is-style-onstage-pink.btn-white-pink .wp-block-button__link:hover,
+.wp-block-button.btn-white-pink .wp-block-button__link:hover,
+.wp-block-button.btn-hero-large .wp-block-button__link:hover,
+.hero-cover a.btn-hero-large:hover,
+.hero-cover a.btn-white-pink:hover {
+    background: var(--hero-cta-pink) !important;
+    color: #fff !important;
+    border-color: var(--hero-cta-pink) !important;
+}
+
+.staff-img img,
+figure.staff-img img,
+.staff-img-col img {
+    width: 300px;
+    height: 300px;
+    max-width: 300px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 0 auto;
+}
+
+form#eligibilityForm,
+.eligibility-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    margin: 24px 0 8px;
+}
+
+.costume-categories-grid a.category-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.costume-categories-grid .lightbox-trigger,
+.costume-categories-grid .lightbox-trigger-wrapper,
+.category-card .wp-lightbox-container button {
+    display: none !important;
+}
+
+.show-gallery-card .view-gallery-link a {
+    color: var(--primary-pink) !important;
+    text-decoration: none;
+}
+
+.other-costume-shows h3,
+.other-costume-shows .wp-block-heading {
+    color: var(--primary-purple) !important;
+}
+
+.site-footer,
+.site-footer.bg-light-blue,
+.wp-block-group.site-footer {
+    background-color: var(--primary-blue) !important;
+}
+
+.vision-section.bg-light-blue,
+.programs.bg-light-blue,
+.costume-left.bg-light-blue {
+    background-color: var(--primary-blue);
+}
+
+.hero-cover .wp-block-cover__background.has-background-dim {
+    opacity: 0.42;
+}
+
+.costume-categories-section .costume-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    margin-top: 36px;
+}
+
+.inner-program-page,
+.show-gallery-page,
+.costume-collection-page {
+    padding: 40px 20px 80px;
+}
+
+.inner-program-page h1,
+.show-gallery-page h1,
+.costume-collection-page h1 {
+    color: var(--primary-pink);
+}
+
+.inner-program-kicker,
+.inner-program-page h2.green-text {
+    color: var(--primary-green);
+    text-shadow: none;
+}
+
+@media (max-width: 900px) {
+    .top-nav .wp-block-site-logo img,
+    .top-nav .custom-logo,
+    .top-nav .nav-logo,
+    header.wp-block-template-part .wp-block-site-logo img {
+        height: 140px !important;
+        margin-top: -15px !important;
+        margin-bottom: -15px !important;
+    }
+
+    .staff-img img,
+    figure.staff-img img,
+    .staff-img-col img {
+        width: 220px;
+        height: 220px;
+        max-width: 220px;
+    }
+}
+
+/* --- Voice & Piano Lessons (mockup) --- */
+.voice-title-section,
+.voice-private-section {
+    background: #ececec;
+}
+
+.voice-title-section {
+    padding: 56px 20px 10px;
+}
+
+.voice-page-title,
+h1.voice-page-title {
+    color: var(--primary-pink) !important;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: clamp(2.2rem, 4.4vw, 3.1rem) !important;
+    letter-spacing: 0.06em;
+    margin: 0;
+}
+
+.voice-private-section {
+    padding: 20px 20px 70px;
+}
+
+.voice-private-row.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) !important;
+    gap: 40px !important;
+    align-items: center !important;
+}
+
+.voice-private-photo img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 12px;
+    display: block;
+}
+
+.voice-private-heading,
+.voice-private-copy h2 {
+    color: var(--text-dark) !important;
+    text-transform: uppercase;
+    text-align: left;
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+}
+
+.voice-private-copy p {
+    text-align: left;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.voice-price,
+.voice-private-copy p.voice-price {
+    color: var(--primary-pink) !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 18px 0 12px;
+}
+
+.voice-info-section {
+    background: #f8f4e8;
+    padding: 70px 20px;
+}
+
+.voice-info-section h2 {
+    color: var(--primary-pink) !important;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+}
+
+.voice-info-grid.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+}
+
+.voice-info-card,
+.wp-block-column.voice-info-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 22px 32px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.voice-info-icon,
+.voice-info-icon i {
+    color: var(--primary-green);
+    font-size: 2rem;
+    margin: 0 0 10px;
+}
+
+.voice-info-card h3.green-text {
+    color: var(--primary-green) !important;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+}
+
+.voice-recital-section {
+    background: #fff;
+    padding: 70px 20px 80px;
+}
+
+.voice-recital-row.wp-block-columns {
+    display: grid !important;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) !important;
+    gap: 48px !important;
+    align-items: center !important;
+}
+
+.voice-recital-img img,
+.voice-recital-photo img {
+    width: 300px;
+    height: 300px;
+    max-width: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.voice-recital-copy h2 {
+    color: var(--primary-pink) !important;
+    text-transform: uppercase;
+    text-align: left;
+    font-size: 1.7rem;
+    margin-bottom: 16px;
+}
+
+.voice-recital-copy p {
+    text-align: left;
+    margin-bottom: 6px;
+    font-size: 1.1rem;
+}
+
+.voice-recital-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px !important;
+}
+
+.voice-recital-actions .btn {
+    display: inline-block;
+    text-decoration: none;
+    border-radius: 30px;
+    padding: 12px 26px;
+    font-weight: 800;
+}
+
+.voice-recital-actions .btn-pink {
+    background: var(--primary-pink);
+    color: #fff;
+}
+
+.voice-recital-actions .btn-black {
+    background: var(--text-dark);
+    color: #fff;
+}
+
+@media (max-width: 900px) {
+    .voice-private-row.wp-block-columns,
+    .voice-info-grid.wp-block-columns,
+    .voice-recital-row.wp-block-columns {
+        grid-template-columns: 1fr !important;
+    }
+
+    .voice-recital-copy h2,
+    .voice-private-copy,
+    .voice-private-heading {
+        text-align: center !important;
+    }
+
+    .voice-recital-actions {
+        justify-content: center;
+    }
+}
+
+/* =========================================================
+   PROGRAM / GALLERY / COSTUME CHILD PAGES (1.0.11)
+   ========================================================= */
+
+.program-child-title,
+h1.program-child-title {
+    color: var(--primary-pink) !important;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: clamp(2.2rem, 4.4vw, 3.1rem) !important;
+    letter-spacing: 0.06em;
+    margin: 0;
+}
+
+.dance-title-section,
+.children-title-section,
+.musical-title-section,
+.destination-media-page {
+    padding: 56px 20px 10px;
+}
+
+.announcement-section .announcement-content.wp-block-columns {
+    display: flex !important;
+    flex-wrap: nowrap;
+    align-items: center !important;
+    gap: 40px !important;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.announcement-img img,
+.announcement-section .announcement-img img {
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 12px;
+    display: block;
+}
+
+.announcement-text h2,
+.announcement-section .announcement-text h2 {
+    color: var(--text-dark);
+    text-transform: uppercase;
+    text-align: left;
+    font-size: 1.7rem;
+    margin-bottom: 16px;
+}
+
+.announcement-text h3.pink-text,
+.announcement-section .announcement-text h3.pink-text {
+    color: var(--primary-pink) !important;
+    text-transform: uppercase;
+    text-align: left;
+    margin: 8px 0 12px;
+}
+
+.announcement-text p,
+.announcement-section .announcement-text p {
+    text-align: left;
+    color: #333;
+    line-height: 1.7;
+}
+
+.program-child-actions,
+.btn-container.program-child-actions,
+.cta-buttons.program-child-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+    align-items: center;
+}
+
+.program-child-actions .btn {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.program-card-action {
+    text-align: center;
+}
+
+.acting-programs-section .program-card h3.pink-text,
+.program-catalog-grid .program-card h3.pink-text {
+    color: var(--primary-pink) !important;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 0;
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+    line-height: 1.35;
+}
+
+.acting-programs-section .program-card h3.pink-text i,
+.program-catalog-grid .program-card h3.pink-text i {
+    color: var(--primary-pink);
+    font-size: 1.15rem;
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-body h3.green-text {
+    color: var(--primary-green) !important;
+    display: block;
+    min-height: 3.4rem;
+}
+
+.program-catalog-action {
+    margin: 0;
+    text-align: center;
+}
+
+a.program-catalog-button,
+.program-catalog-button.btn-pink {
+    min-width: 165px;
+    margin-top: auto;
+    text-align: center;
+    color: #fff;
+    background-color: #E95BAF;
+    border-radius: 30px;
+    padding: 12px 28px;
+    display: inline-block;
+    text-decoration: none;
+}
+
+a.program-catalog-button:hover,
+a.program-catalog-button:focus {
+    color: #fff;
+    background-color: var(--primary-purple);
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-image,
+.acting-programs-section .program-catalog-card figure.wp-block-image {
+    overflow: hidden;
+    margin: 0;
+    aspect-ratio: 4 / 3;
+}
+
+.acting-programs-section .program-catalog-card .program-catalog-image img,
+.acting-programs-section .program-catalog-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 190px;
+    margin: 0;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 0;
+}
+
+.children-pathway-grid .program-card img,
+.musical-learn-grid .program-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.recital-section .recital-content.wp-block-columns {
+    display: flex !important;
+    flex-wrap: nowrap;
+    align-items: center !important;
+    gap: 60px !important;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.recital-section .recital-image img {
+    width: 300px;
+    height: 300px;
+    max-width: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.musical-schedule-rule {
+    border: 0;
+    border-top: 1px solid #d8d8d8;
+    margin: 16px 0;
+}
+
+.gallery-intro {
+    padding: 20px 20px 10px;
+}
+
+.gallery-intro p {
+    max-width: 780px;
+    margin: 0 auto;
+    color: #333;
+    line-height: 1.7;
+}
+
+.destination-intro-section {
+    padding: 20px 20px 40px;
+}
+
+.destination-gallery-section {
+    padding: 20px 20px 80px;
+}
+
+.destination-gallery-section .destination-gallery-grid {
+    margin-top: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.destination-gallery-section .program-child-actions {
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.destination-gallery-section .program-child-actions {
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.destination-media-page .gallery-back-link {
+    margin: 0 0 12px;
+}
+
+.gkac-application-action .btn.gkac-application-button {
+    display: inline-block;
+    max-width: 280px;
+    padding: 14px 24px;
+    color: #fff;
+    background: var(--primary-pink);
+    border-radius: 30px;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    text-transform: none;
+}
+
+.gkac-application-action .btn.gkac-application-button:hover {
+    color: #fff;
+    background: var(--primary-purple);
+}
+
+@media (max-width: 900px) {
+    .announcement-section .announcement-content.wp-block-columns,
+    .recital-section .recital-content.wp-block-columns {
+        flex-wrap: wrap;
+    }
+
+    .announcement-text h2,
+    .announcement-text h3.pink-text,
+    .announcement-text p,
+    .recital-text h3,
+    .recital-text p {
+        text-align: center;
+    }
+
+    .program-child-actions,
+    .btn-container.program-child-actions,
+    .cta-buttons.program-child-actions {
+        justify-content: center;
+    }
+
+    .announcement-img img,
+    .announcement-section .announcement-img img {
+        height: 260px;
+    }
+
+    .past-productions-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .destination-gallery-section .destination-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .past-productions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .destination-gallery-section .destination-gallery-grid {
+        grid-template-columns: 1fr;
     }
 }

@@ -1,0 +1,1403 @@
+/**
+ * Editor + front layout overrides.
+ * Loaded via enqueue_block_assets so Gutenberg cannot skip them.
+ * Core Image uses height:auto; these rules must win with !important.
+ */
+
+/* --- Header logo (preview: 250px + -55px margins) --- */
+header.wp-block-template-part,
+.wp-site-blocks > header {
+	display: block !important;
+	position: relative;
+	z-index: 20;
+	background: #fff;
+	overflow: visible;
+}
+
+header.wp-block-template-part .wp-block-site-logo,
+header.wp-block-template-part .wp-block-site-logo a,
+.top-nav .wp-block-site-logo,
+.top-nav .wp-block-site-logo a,
+.nav-site-logo.wp-block-site-logo,
+.nav-site-logo.wp-block-site-logo a {
+	line-height: 0;
+}
+
+header.wp-block-template-part .wp-block-site-logo img,
+header.wp-block-template-part .custom-logo,
+.top-nav .wp-block-site-logo img,
+.top-nav .wp-block-site-logo a img,
+.top-nav img.custom-logo,
+.nav-site-logo img,
+.editor-styles-wrapper .top-nav .wp-block-site-logo img {
+	width: auto !important;
+	height: 250px !important;
+	max-height: none !important;
+	max-width: none !important;
+	margin-top: -55px !important;
+	margin-bottom: -55px !important;
+	object-fit: contain !important;
+	display: block !important;
+}
+
+.top-nav,
+header.wp-block-template-part .top-nav {
+	padding-top: 12px !important;
+	padding-bottom: 12px !important;
+}
+
+/* --- Home hero: equal-width CTA bars & large H1 matching reference preview --- */
+.hero-cover .hero-text-row.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+	gap: 48px !important;
+	align-items: stretch !important;
+	width: 100% !important;
+}
+
+.hero-cover .hero-left,
+.hero-cover .hero-right {
+	display: flex !important;
+	flex-direction: column !important;
+	justify-content: space-between !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+.hero-cover h1.hero-title,
+.hero-cover h1.wp-block-heading {
+	overflow-wrap: normal !important;
+	word-break: normal !important;
+	hyphens: none !important;
+	font-size: clamp(2.5rem, 4.5vw, 3.6rem) !important;
+	font-weight: 800 !important;
+	letter-spacing: 2px !important;
+	line-height: 1.15 !important;
+	color: #ffffff !important;
+	margin-bottom: 20px !important;
+}
+
+.hero-cover .hero-cta,
+.hero-cover p.hero-cta,
+.hero-cover .hero-cta .wp-block-button,
+.hero-cover .wp-block-button.btn-hero-large,
+.hero-cover .wp-block-button.btn-white-pink {
+	width: 100% !important;
+	max-width: none !important;
+	background: transparent !important;
+	border: none !important;
+	padding: 0 !important;
+	box-shadow: none !important;
+	margin-top: auto !important;
+}
+
+.hero-cover a.btn-hero-large,
+.hero-cover a.btn-white-pink,
+.hero-cover .hero-cta .wp-block-button__link {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 100% !important;
+	min-width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+	background: #ffffff !important;
+	color: #e95baf !important;
+	border: 3px solid #e95baf !important;
+	border-radius: 4px !important;
+	padding: 18px 24px !important;
+	font-size: clamp(1.2rem, 1.8vw, 1.5rem) !important;
+	font-weight: 800 !important;
+	text-decoration: none !important;
+	text-transform: uppercase !important;
+	height: 64px !important;
+}
+
+.hero-cover a.btn-hero-large:hover,
+.hero-cover a.btn-white-pink:hover,
+.hero-cover .hero-cta .wp-block-button__link:hover,
+.hero-cover .hero-cta .wp-block-button__link:focus {
+	background: #e95baf !important;
+	color: #ffffff !important;
+	border-color: #e95baf !important;
+}
+
+.programs .program-card h3.pink-text,
+.program-card h3.pink-text {
+	color: #e95baf !important;
+}
+
+.voice-info-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 24px !important;
+}
+
+.voice-recital-actions {
+	display: flex !important;
+	gap: 16px !important;
+}
+
+@media (max-width: 900px) {
+	.voice-info-grid.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* --- Explore Our Programs: equal-height cards, aligned title/text/photo/CTA rows --- */
+.programs .programs-grid.wp-block-columns,
+.wp-block-group.programs .wp-block-columns.programs-grid,
+.wp-block-columns.programs-grid > .block-editor-inner-blocks > .block-editor-block-list__layout,
+.block-editor-block-list__block.programs-grid > .block-editor-inner-blocks > .block-editor-block-list__layout {
+	display: grid !important;
+	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+	gap: 30px !important;
+	align-items: stretch !important;
+	width: 100% !important;
+}
+
+.wp-block-columns.programs-grid > .block-editor-inner-blocks,
+.block-editor-block-list__block.programs-grid > .block-editor-inner-blocks {
+	display: block !important;
+	height: 100% !important;
+	width: 100% !important;
+}
+
+.programs .wp-block-column.program-card,
+.editor-styles-wrapper .programs .wp-block-column.program-card,
+.block-editor-block-list__block.wp-block-column.program-card,
+.programs .program-card > .block-editor-inner-blocks,
+.programs .program-card > .block-editor-inner-blocks > .block-editor-block-list__layout,
+.block-editor-block-list__block.program-card > .block-editor-inner-blocks,
+.block-editor-block-list__block.program-card > .block-editor-inner-blocks > .block-editor-block-list__layout {
+	display: flex !important;
+	flex-direction: column !important;
+	height: 100% !important;
+	min-height: 100% !important;
+	align-items: stretch !important;
+	align-self: stretch !important;
+	background: #fff;
+}
+
+.programs .program-card h3.pink-text,
+.programs .program-card h3.wp-block-heading,
+.programs .program-card .block-editor-block-list__block:has(> h3) {
+	flex: 0 0 auto !important;
+	min-height: 3.3rem !important;
+	margin: 0 0 12px !important;
+	display: flex !important;
+	align-items: flex-start !important;
+	justify-content: center !important;
+	text-align: center !important;
+	font-size: 1.5rem !important;
+	font-weight: 700 !important;
+	line-height: 1.1 !important;
+	color: #E95BAF !important;
+}
+
+.programs .program-card .program-card-copy,
+.programs .program-card .wp-block-group.program-card-copy,
+.programs .program-card .block-editor-block-list__block:has(.program-card-copy) {
+	flex: 1 1 auto !important;
+	min-height: 10.5em !important;
+	width: 100% !important;
+	margin: 0 !important;
+}
+
+.programs .program-card .program-card-copy p,
+.programs .program-card .program-card-copy .wp-block-paragraph {
+	margin: 0 !important;
+	font-size: 0.9rem !important;
+	line-height: 1.5 !important;
+}
+
+.programs .program-card img,
+.programs .program-card .wp-block-cover,
+.programs .program-card .wp-block-cover img,
+.editor-styles-wrapper .programs .program-card img {
+	width: 100% !important;
+	height: 168px !important;
+	max-height: 168px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	display: block !important;
+	border-radius: 4px;
+}
+
+.programs .program-card .wp-block-image,
+.programs .program-card figure,
+.programs .program-card .block-editor-block-list__block:has(> .wp-block-image) {
+	width: 100% !important;
+	height: 168px !important;
+	margin-top: 12px !important;
+	margin-bottom: 0 !important;
+	flex: 0 0 auto !important;
+	overflow: hidden !important;
+}
+
+.programs .program-card .wp-block-buttons,
+.programs .program-card .program-card-action,
+.programs .program-card .wp-block-group.program-card-action,
+.programs .program-card .block-editor-block-list__block:has(.program-card-action) {
+	margin-top: auto !important;
+	padding-top: 16px !important;
+	width: 100% !important;
+	flex: 0 0 auto !important;
+	text-align: center !important;
+}
+
+.programs .program-card .program-card-action .btn-blue-small,
+.programs .program-card .program-card-action p {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* --- What's Happening Now: equal image crop, aligned green bars --- */
+.happening-now .news-grid.wp-block-columns,
+.wp-block-group.happening-now .wp-block-columns.news-grid {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 30px !important;
+	align-items: stretch !important;
+}
+
+.happening-now .wp-block-column {
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+.happening-now .news-card {
+	display: flex !important;
+	flex-direction: column !important;
+	flex: 1 1 auto !important;
+	height: 100% !important;
+	overflow: hidden !important;
+}
+
+.happening-now .news-card img,
+.happening-now .news-card .wp-block-cover img,
+.editor-styles-wrapper .happening-now .news-card img {
+	width: 100% !important;
+	height: 220px !important;
+	max-height: 220px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	display: block !important;
+}
+
+.happening-now .news-card .wp-block-image,
+.happening-now .news-card figure {
+	width: 100% !important;
+	margin: 0 !important;
+}
+
+.happening-now .news-card .news-banner {
+	margin: 0 !important;
+	margin-top: auto !important;
+}
+
+/* --- Behind the Scenes: square cropped Gallery tiles --- */
+.behind-scenes .wp-block-gallery.has-nested-images,
+.wp-block-gallery.has-nested-images.gallery-grid {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 10px !important;
+}
+
+.behind-scenes .wp-block-gallery .wp-block-image,
+.wp-block-gallery.gallery-grid .wp-block-image,
+.wp-block-gallery.has-nested-images.gallery-grid > figure {
+	width: 100% !important;
+	margin: 0 !important;
+	aspect-ratio: 1 / 1 !important;
+	overflow: hidden !important;
+	position: relative !important;
+}
+
+.behind-scenes .wp-block-gallery img,
+.wp-block-gallery.gallery-grid img {
+	width: 100% !important;
+	height: 100% !important;
+	aspect-ratio: 1 / 1 !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+}
+
+/* --- Footer always visible, mockup light blue --- */
+footer.wp-block-template-part,
+.site-footer,
+.wp-block-group.site-footer {
+	display: block !important;
+	width: 100% !important;
+	max-width: none !important;
+	background-color: #81d4fa !important;
+	color: #1e1e1e !important;
+	padding: 50px 20px 20px !important;
+}
+
+.site-footer .footer-content.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) !important;
+	gap: 30px !important;
+	align-items: start !important;
+}
+
+@media (max-width: 900px) {
+	.programs .programs-grid.wp-block-columns,
+	.wp-block-group.programs .wp-block-columns.programs-grid,
+	.wp-block-columns.programs-grid > .block-editor-inner-blocks > .block-editor-block-list__layout {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+
+	.happening-now .news-grid.wp-block-columns,
+	.wp-block-group.happening-now .wp-block-columns.news-grid {
+		grid-template-columns: 1fr !important;
+	}
+
+	.behind-scenes .wp-block-gallery.has-nested-images,
+	.wp-block-gallery.has-nested-images.gallery-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+
+	.site-footer .footer-content.wp-block-columns {
+		grid-template-columns: 1fr !important;
+		justify-items: center !important;
+		text-align: center !important;
+	}
+
+	header.wp-block-template-part .wp-block-site-logo img,
+	.top-nav .wp-block-site-logo img,
+	.nav-site-logo img {
+		height: 140px !important;
+		max-height: none !important;
+		margin-top: -15px !important;
+		margin-bottom: -15px !important;
+	}
+}
+
+@media (max-width: 600px) {
+	.programs .programs-grid.wp-block-columns,
+	.wp-block-group.programs .wp-block-columns.programs-grid,
+	.wp-block-columns.programs-grid > .block-editor-inner-blocks > .block-editor-block-list__layout {
+		grid-template-columns: 1fr !important;
+	}
+
+	.behind-scenes .wp-block-gallery.has-nested-images,
+	.wp-block-gallery.has-nested-images.gallery-grid {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* --- Single show two-column mockup --- */
+.single-show .show-details-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) !important;
+	gap: 48px !important;
+	align-items: start !important;
+}
+
+.single-show .show-page-title,
+.single-show h1.wp-block-post-title {
+	color: #e95baf !important;
+	text-align: center !important;
+	text-transform: uppercase !important;
+}
+
+.single-show .about-show-heading {
+	color: #6a3fc7 !important;
+	text-transform: uppercase !important;
+	text-align: left !important;
+}
+
+@media (max-width: 900px) {
+	.single-show .show-details-grid.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* --- Programs catalog 3x2 equal cards --- */
+.acting-programs-section .program-catalog-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 28px !important;
+	align-items: stretch !important;
+}
+
+.acting-programs-section .program-catalog-card {
+	display: flex !important;
+	flex-direction: column !important;
+	height: 100% !important;
+}
+
+.acting-programs-section .program-catalog-card figure.program-catalog-image,
+.acting-programs-section .program-catalog-card .wp-block-image {
+	display: block !important;
+	width: 100% !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	aspect-ratio: 4 / 3 !important;
+	height: auto !important;
+}
+
+.acting-programs-section .program-catalog-card img {
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 0 !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	display: block !important;
+}
+
+.acting-programs-section .program-catalog-body {
+	flex: 1 1 auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+.acting-programs-section .program-catalog-body .wp-block-buttons {
+	margin-top: auto !important;
+}
+
+/* --- Show gallery covers --- */
+.show-gallery-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 22px !important;
+}
+
+.show-gallery-card.wp-block-cover {
+	position: relative !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border-radius: 28px !important;
+	overflow: hidden !important;
+	min-height: 280px !important;
+}
+
+.show-gallery-card .wp-block-cover__image-background {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+}
+
+.show-gallery-card .wp-block-cover__inner-container {
+	position: relative !important;
+	z-index: 2 !important;
+	text-align: center !important;
+}
+
+/* --- Costume collection cards --- */
+.costume-categories-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 28px !important;
+}
+
+/* --- Shows listing rows --- */
+.buy-tickets-section .event-item.buy-tickets-row {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr !important;
+	gap: 40px !important;
+}
+
+.past-productions-gallery.wp-block-gallery.has-nested-images,
+.past-productions-grid {
+	display: grid !important;
+	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+	gap: 12px !important;
+}
+
+@media (max-width: 900px) {
+	.acting-programs-section .program-catalog-grid.wp-block-columns,
+	.show-gallery-grid.wp-block-columns,
+	.costume-categories-grid.wp-block-columns,
+	.past-productions-gallery.wp-block-gallery.has-nested-images,
+	.past-productions-grid,
+	.destination-gallery-section .destination-gallery-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+
+	.buy-tickets-section .event-item.buy-tickets-row {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+@media (max-width: 600px) {
+	.acting-programs-section .program-catalog-grid.wp-block-columns,
+	.show-gallery-grid.wp-block-columns,
+	.costume-categories-grid.wp-block-columns,
+	.past-productions-gallery.wp-block-gallery.has-nested-images,
+	.past-productions-grid,
+	.destination-gallery-section .destination-gallery-grid {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* --- Hub child pages: catalog pills + intro rows --- */
+.acting-programs-section .program-catalog-grid.wp-block-columns {
+	display: grid !important;
+}
+
+a.program-catalog-button {
+	background-color: #E95BAF !important;
+	color: #fff !important;
+	border-radius: 30px !important;
+	padding: 12px 28px !important;
+	text-decoration: none !important;
+}
+
+a.program-catalog-button:hover,
+a.program-catalog-button:focus {
+	background-color: #6A3FC7 !important;
+	color: #fff !important;
+}
+
+.announcement-section .announcement-content.wp-block-columns,
+.recital-section .recital-content.wp-block-columns {
+	display: flex !important;
+	align-items: center !important;
+}
+
+.program-child-actions,
+.voice-recital-actions {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	gap: 16px !important;
+}
+
+.destination-gallery-section .destination-gallery-grid {
+	display: grid !important;
+	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+	gap: 20px !important;
+}
+
+.weekly-schedule-grid {
+	display: grid !important;
+	grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+	gap: 16px !important;
+}
+
+.schedule-details-grid.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 1150px) {
+	.weekly-schedule-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 850px) {
+	.weekly-schedule-grid,
+	.schedule-details-grid.wp-block-columns {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+/* --- Programs heading hierarchy (preview: h1 3rem / h2 2.2rem) --- */
+h1.programs-page-title,
+.page-header h1.pink-text,
+h1.wp-block-heading.pink-text {
+	font-size: clamp(2.5rem, 5vw, 3rem) !important;
+	font-weight: 800 !important;
+	letter-spacing: 0.06em !important;
+	line-height: 1.15 !important;
+	color: #E95BAF !important;
+}
+
+h2.programs-section-label,
+.acting-programs-section h2.pink-text,
+h2.wp-block-heading.pink-text {
+	font-size: clamp(1.55rem, 3.2vw, 2.2rem) !important;
+	font-weight: 800 !important;
+	letter-spacing: 0.04em !important;
+	line-height: 1.2 !important;
+	color: #E95BAF !important;
+}
+
+/* --- Shared responsive (preview: 950 / 900 / 850 / 768 / 620 / 600) --- */
+@media (max-width: 950px) {
+	.acting-programs-section .program-catalog-grid.wp-block-columns {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 900px) {
+	.programs .programs-grid.wp-block-columns,
+	.wp-block-group.programs .wp-block-columns.programs-grid,
+	.wp-block-columns.programs-grid > .block-editor-inner-blocks > .block-editor-block-list__layout {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+
+	.happening-now .news-grid.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+
+	.hero-cover .hero-text-row.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+
+	.hero-cover h1.hero-title .hero-title-line {
+		white-space: normal !important;
+	}
+
+	.home-upcoming-shows .event-item.home-show-card,
+	.home-upcoming-shows .wp-block-group.home-show-card {
+		grid-template-columns: 1fr !important;
+	}
+
+	.home-upcoming-shows .wp-block-post-featured-image img,
+	.home-upcoming-shows .home-show-card img {
+		min-height: 200px !important;
+		height: 220px !important;
+	}
+
+	.gkac-application-box.wp-block-group {
+		grid-template-columns: 1fr !important;
+		text-align: center;
+	}
+
+	.top-nav .nav-container,
+	header.wp-block-template-part .nav-container {
+		flex-wrap: wrap !important;
+		justify-content: center !important;
+		gap: 12px !important;
+	}
+}
+
+@media (max-width: 768px) {
+	.announcement-section .announcement-content.wp-block-columns,
+	.recital-section .recital-content.wp-block-columns {
+		flex-wrap: wrap !important;
+	}
+
+	.program-child-actions,
+	.voice-recital-actions {
+		justify-content: center !important;
+	}
+}
+
+@media (max-width: 620px) {
+	.acting-programs-section .program-catalog-grid.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+
+	.acting-programs-section .program-catalog-card {
+		max-width: 430px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+
+@media (max-width: 600px) {
+	.weekly-schedule-grid,
+	.schedule-details-grid.wp-block-columns {
+		grid-template-columns: 1fr !important;
+	}
+
+	.programs .programs-grid.wp-block-columns,
+	.wp-block-group.programs .wp-block-columns.programs-grid {
+		grid-template-columns: 1fr !important;
+	}
+
+	h1.programs-page-title,
+	h1.shows-page-title,
+	.page-header h1.pink-text,
+	h1.wp-block-heading.pink-text {
+		font-size: 2rem !important;
+	}
+
+	h2.programs-section-label,
+	h2.shows-section-heading,
+	.acting-programs-section h2.pink-text,
+	h2.wp-block-heading.pink-text,
+	.buy-tickets-heading {
+		font-size: 1.45rem !important;
+	}
+
+	.shows-hero-row.wp-block-columns,
+	.buy-tickets-section .event-item.buy-tickets-row {
+		grid-template-columns: 1fr !important;
+	}
+
+	.past-productions-grid,
+	.past-productions-gallery {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* --- Behind the Scenes pink badge: center on the page --- */
+.behind-scenes h2.section-badge,
+.behind-scenes .wp-block-heading.section-badge,
+h2.section-badge.bg-pink {
+	display: block !important;
+	width: fit-content !important;
+	max-width: 100% !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	margin-bottom: 40px !important;
+	text-align: center !important;
+}
+
+/* --- Home Upcoming Shows cards (image left, content right) --- */
+.home-upcoming-shows {
+	background-color: #eeeeee !important;
+	padding: 70px 20px !important;
+}
+
+.home-upcoming-shows h2.home-upcoming-heading,
+.home-upcoming-shows .home-upcoming-heading {
+	text-align: center !important;
+	text-transform: uppercase !important;
+	color: #1e1e1e !important;
+	font-weight: 800 !important;
+	font-size: clamp(1.55rem, 3vw, 2.1rem) !important;
+	margin: 0 auto 36px !important;
+}
+
+.home-upcoming-shows .wp-block-query.event-list,
+.home-upcoming-shows .wp-block-post-template {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 24px !important;
+	max-width: 1000px !important;
+	margin: 0 auto !important;
+	padding: 0 !important;
+	list-style: none !important;
+	width: 100% !important;
+}
+
+.home-upcoming-shows .wp-block-post-template > .wp-block-post,
+.home-upcoming-shows .wp-block-post-template > li {
+	width: 100% !important;
+	margin: 0 !important;
+}
+
+.home-upcoming-shows .event-item.home-show-card,
+.home-upcoming-shows .wp-block-group.home-show-card {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) !important;
+	gap: 0 !important;
+	align-items: stretch !important;
+	background: #fff !important;
+	border-radius: 10px !important;
+	overflow: hidden !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+	width: 100% !important;
+}
+
+.home-upcoming-shows .wp-block-post-featured-image,
+.home-upcoming-shows .home-show-photo,
+.home-upcoming-shows .event-item.home-show-card > .wp-block-post-featured-image {
+	margin: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 220px !important;
+	align-self: stretch !important;
+}
+
+.home-upcoming-shows .wp-block-post-featured-image a,
+.home-upcoming-shows .home-show-photo a {
+	display: block !important;
+	height: 100% !important;
+	min-height: 220px !important;
+}
+
+.home-upcoming-shows .wp-block-post-featured-image img,
+.home-upcoming-shows .home-show-card img {
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 220px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	border-radius: 0 !important;
+	display: block !important;
+}
+
+.home-upcoming-shows .home-show-body,
+.home-upcoming-shows .event-details.home-show-body {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: flex-start !important;
+	justify-content: flex-start !important;
+	padding: 28px 32px !important;
+	height: 100% !important;
+	text-align: left !important;
+	background: #fff !important;
+}
+
+.home-upcoming-shows .home-show-title,
+.home-upcoming-shows .home-show-body .wp-block-post-title,
+.home-upcoming-shows .home-show-body .wp-block-post-title a {
+	color: #E95BAF !important;
+	font-size: clamp(1.35rem, 2.2vw, 1.85rem) !important;
+	font-weight: 800 !important;
+	line-height: 1.2 !important;
+	text-decoration: none !important;
+	margin: 0 0 12px !important;
+	text-transform: none !important;
+}
+
+.onstage-show-listing-meta {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+.onstage-show-date-line {
+	display: flex !important;
+	align-items: center !important;
+	gap: 10px !important;
+	margin: 0 0 6px !important;
+	font-weight: 700 !important;
+	color: #1e1e1e !important;
+	font-size: 0.98rem !important;
+	line-height: 1.35 !important;
+}
+
+.onstage-cal-icon {
+	flex: 0 0 18px;
+	width: 18px;
+	height: 18px;
+	border: 1.5px solid #1e1e1e;
+	border-radius: 3px;
+	background: linear-gradient(#E95BAF 0 6px, #fff 6px 100%);
+	box-sizing: border-box;
+}
+
+.onstage-show-venue.event-loc,
+.home-upcoming-shows .onstage-show-venue {
+	color: #1e1e1e !important;
+	font-size: 0.95rem !important;
+	font-weight: 400 !important;
+	margin: 8px 0 6px !important;
+}
+
+.onstage-show-venue p {
+	margin: 0 0 2px !important;
+	color: inherit;
+}
+
+.home-upcoming-shows .wp-block-post-excerpt,
+.home-upcoming-shows .wp-block-post-excerpt p {
+	margin: 8px 0 0 !important;
+	color: #1e1e1e !important;
+	font-size: 0.95rem !important;
+	line-height: 1.5 !important;
+	flex: 1 1 auto;
+}
+
+.home-upcoming-shows .wp-block-post-excerpt__more-text,
+.home-upcoming-shows .wp-block-post-excerpt__more-link {
+	display: none !important;
+}
+
+.home-upcoming-shows .wp-block-read-more,
+.home-upcoming-shows a.home-show-learn-more,
+.home-upcoming-shows .home-show-learn-more {
+	margin-top: auto !important;
+	align-self: flex-start !important;
+	display: inline-block !important;
+	background-color: #81D4FA !important;
+	color: #1e1e1e !important;
+	padding: 8px 22px !important;
+	border-radius: 20px !important;
+	font-weight: 800 !important;
+	font-size: 0.82rem !important;
+	letter-spacing: 0.04em !important;
+	text-decoration: none !important;
+	text-transform: uppercase !important;
+}
+
+.home-upcoming-shows .wp-block-read-more:hover,
+.home-upcoming-shows a.home-show-learn-more:hover {
+	background-color: #6A3FC7 !important;
+	color: #fff !important;
+}
+
+/* Program child intro/hero photos: keep faces in frame.
+   object-position has no !important so a Cover focal-point inline style still wins. */
+.announcement-img img,
+.announcement-section .announcement-img img,
+.voice-private-photo img,
+.musical-intro-section img,
+.dance-intro-section .announcement-img img,
+.children-intro-section .announcement-img img,
+.company-intro-section .announcement-img img,
+.destination-intro-section .announcement-img img,
+.announcement-section .wp-block-cover__image-background,
+.voice-private-section .wp-block-cover__image-background {
+	object-fit: cover !important;
+	object-position: center top;
+}
+
+/* --- Scholarships CTA: center START APPLICATION --- */
+.app-cta-box,
+.wp-block-group.app-cta-box {
+	text-align: center !important;
+}
+
+.app-cta-box .program-child-actions,
+.app-cta-box p.program-child-actions {
+	display: flex !important;
+	justify-content: center !important;
+	width: 100% !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.app-cta-box .program-child-actions .btn,
+.app-cta-box a.btn {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* --- Navigation (center on smaller screens, 2 clean rows) --- */
+@media (max-width: 1024px) {
+	.top-nav .nav-container,
+	header.wp-block-template-part .nav-container {
+		flex-direction: column !important;
+		justify-content: center !important;
+		align-items: center !important;
+		text-align: center !important;
+		gap: 12px !important;
+	}
+
+	.top-nav .wp-block-navigation,
+	.top-nav .wp-block-navigation__container,
+	.top-nav ul.wp-block-navigation__container,
+	.top-nav .nav-links {
+		justify-content: center !important;
+		align-items: center !important;
+		text-align: center !important;
+		flex-wrap: wrap !important;
+		width: 100% !important;
+		gap: 6px 8px !important;
+		margin: 0 auto !important;
+	}
+
+	.top-nav .wp-block-navigation-item a,
+	.top-nav .wp-block-navigation__item-content,
+	.top-nav .nav-links li a {
+		padding: 6px 12px !important;
+		font-size: 0.82rem !important;
+		font-weight: 600 !important;
+		display: inline-block !important;
+		text-align: center !important;
+	}
+}
+
+/* --- Gallery YouTube CTA: centered on the page --- */
+.youtube-channel-cta,
+p.youtube-channel-cta {
+	display: flex !important;
+	justify-content: center !important;
+	align-items: center !important;
+	width: 100% !important;
+	margin: 36px auto 0 !important;
+	text-align: center !important;
+}
+
+.youtube-channel-cta a.btn,
+.youtube-channel-cta a {
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+/* --- Scholarships section background & purple emphasis --- */
+.page-header.scholarship-header,
+.scholarship-header {
+	background-color: #F8F6F2 !important;
+}
+
+.scholarship-intro,
+.wp-block-group.scholarship-intro {
+	background-color: #f4f4f4 !important;
+	padding: 60px 0 !important;
+}
+
+.scholarship-text .subtitle,
+.scholarship-text p.subtitle,
+.scholarship-text .purple-text {
+	color: #6A3FC7 !important;
+	font-weight: 600 !important;
+	font-size: 1.1rem !important;
+	margin-bottom: 20px !important;
+}
+
+.scholarship-text p strong {
+	color: #6A3FC7 !important;
+}
+
+/* --- Costume Rentals: body text size, image crop, bold heading --- */
+.costume-overview-section .overview-text p,
+.costume-overview-section p {
+	font-size: 1.1rem !important;
+	line-height: 1.7 !important;
+	color: #333333 !important;
+}
+
+.costume-overview-section .overview-image img,
+.overview-image img,
+.overview-row-flip .overview-image img {
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 280px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	display: block !important;
+}
+
+.rental-form-cta-section h2,
+.rental-form-cta-section .wp-block-heading {
+	font-weight: 800 !important;
+	font-size: clamp(1.6rem, 3.2vw, 2.2rem) !important;
+	text-transform: uppercase !important;
+	color: #E95BAF !important;
+}
+
+/* --- Shows listings: finished white-card layout --- */
+.buy-tickets-section {
+	background-color: #eeeeee !important;
+	padding: 70px 20px !important;
+}
+
+.buy-tickets-section .buy-tickets-heading {
+	text-align: center !important;
+	text-transform: uppercase !important;
+	margin-bottom: 40px !important;
+	font-size: clamp(1.6rem, 3.2vw, 2.2rem) !important;
+	font-weight: 800 !important;
+}
+
+.buy-tickets-section .wp-block-post-template {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 32px !important;
+	max-width: 1000px !important;
+	margin: 0 auto !important;
+	padding: 0 !important;
+	list-style: none !important;
+	width: 100% !important;
+}
+
+.buy-tickets-section .event-item.buy-tickets-row {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) !important;
+	gap: 0 !important;
+	align-items: stretch !important;
+	background: #ffffff !important;
+	border-radius: 10px !important;
+	overflow: hidden !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+	width: 100% !important;
+}
+
+.buy-tickets-section .event-details.buy-tickets-text {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: flex-start !important;
+	justify-content: flex-start !important;
+	padding: 32px 36px !important;
+	height: 100% !important;
+	text-align: left !important;
+	background: #ffffff !important;
+}
+
+.buy-tickets-section .buy-tickets-text .wp-block-post-title,
+.buy-tickets-section .buy-tickets-text .wp-block-post-title a {
+	color: #E95BAF !important;
+	font-size: clamp(1.35rem, 2.2vw, 1.85rem) !important;
+	font-weight: 800 !important;
+	line-height: 1.2 !important;
+	text-decoration: none !important;
+	margin: 0 0 12px !important;
+	text-transform: none !important;
+}
+
+.buy-tickets-section .buy-tickets-text .wp-block-post-excerpt,
+.buy-tickets-section .buy-tickets-text .wp-block-post-excerpt p {
+	margin: 12px 0 20px !important;
+	color: #1e1e1e !important;
+	font-size: 0.98rem !important;
+	line-height: 1.55 !important;
+	flex: 1 1 auto;
+}
+
+.buy-tickets-section .buy-tickets-text .wp-block-read-more,
+.buy-tickets-section .buy-tickets-text a.wp-block-read-more {
+	margin-top: auto !important;
+	align-self: flex-start !important;
+	display: inline-block !important;
+	background-color: #81D4FA !important;
+	color: #1e1e1e !important;
+	padding: 10px 24px !important;
+	border-radius: 20px !important;
+	font-weight: 800 !important;
+	font-size: 0.82rem !important;
+	letter-spacing: 0.04em !important;
+	text-decoration: none !important;
+	text-transform: uppercase !important;
+}
+
+.buy-tickets-section .buy-tickets-text .wp-block-read-more:hover,
+.buy-tickets-section .buy-tickets-text a.wp-block-read-more:hover {
+	background-color: #6A3FC7 !important;
+	color: #ffffff !important;
+}
+
+.buy-tickets-section .wp-block-post-featured-image.buy-tickets-poster,
+.buy-tickets-section .wp-block-post-featured-image.buy-tickets-poster a {
+	margin: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 280px !important;
+	align-self: stretch !important;
+	background: #ffffff !important;
+	display: block !important;
+}
+
+.buy-tickets-section .wp-block-post-featured-image.buy-tickets-poster img {
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 280px !important;
+	max-height: 380px !important;
+	object-fit: contain !important;
+	object-position: center center !important;
+	background: #ffffff !important;
+	display: block !important;
+	border-radius: 0 !important;
+	padding: 16px !important;
+	box-sizing: border-box !important;
+}
+
+.shows-hero-row.wp-block-columns {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+	align-items: center !important;
+}
+
+.shows-hero-section .shows-hero-photo img {
+	width: 100% !important;
+	height: 380px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	box-shadow: none !important;
+}
+
+@media (max-width: 900px) {
+	.shows-hero-row.wp-block-columns,
+	.buy-tickets-section .event-item.buy-tickets-row {
+		grid-template-columns: 1fr !important;
+	}
+
+	.past-productions-grid,
+	.past-productions-gallery {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+/* --- COMPREHENSIVE MOBILE RESPONSIVE POLISH (< 768px & < 600px) --- */
+@media (max-width: 768px) {
+	/* Hero Mobile Layout */
+	.hero-cover {
+		padding: 40px 16px !important;
+		min-height: auto !important;
+	}
+
+	.hero-cover .hero-text-row.wp-block-columns {
+		grid-template-columns: 1fr !important;
+		gap: 32px !important;
+		text-align: center !important;
+	}
+
+	.hero-cover .hero-left,
+	.hero-cover .hero-right {
+		align-items: center !important;
+		text-align: center !important;
+	}
+
+	.hero-cover h1.hero-title,
+	.hero-cover h1.wp-block-heading {
+		font-size: clamp(1.8rem, 6.5vw, 2.5rem) !important;
+		text-align: center !important;
+		margin-bottom: 20px !important;
+	}
+
+	.hero-cover .hero-subtitle,
+	.hero-cover h2.hero-subtitle,
+	.hero-cover .hero-desc,
+	.hero-cover p.hero-desc {
+		text-align: center !important;
+	}
+
+	.hero-cover .hero-cta,
+	.hero-cover p.hero-cta {
+		display: flex !important;
+		justify-content: center !important;
+		width: 100% !important;
+		margin-top: 16px !important;
+	}
+
+	.hero-cover a.btn-hero-large,
+	.hero-cover a.btn-white-pink {
+		max-width: 320px !important;
+		margin: 0 auto !important;
+		padding: 16px 24px !important;
+		font-size: 1.15rem !important;
+	}
+
+	/* Card Layout Centering & Stacking */
+	.program-card,
+	.news-card,
+	.shows-upcoming-card,
+	.buy-tickets-row,
+	.scholarship-grid,
+	.overview-row,
+	.overview-row-flip {
+		text-align: center !important;
+	}
+
+	.scholarship-grid,
+	.overview-row,
+	.overview-row-flip {
+		display: flex !important;
+		flex-direction: column !important;
+		gap: 28px !important;
+		align-items: center !important;
+	}
+
+	.scholarship-text,
+	.scholarship-image,
+	.overview-text,
+	.overview-image {
+		width: 100% !important;
+		text-align: center !important;
+	}
+
+	.scholarship-text h2,
+	.overview-text h2 {
+		text-align: center !important;
+	}
+
+	.buy-tickets-section .event-item.buy-tickets-row {
+		grid-template-columns: 1fr !important;
+		text-align: center !important;
+	}
+
+	.buy-tickets-section .event-details.buy-tickets-text {
+		align-items: center !important;
+		text-align: center !important;
+		padding: 24px 20px !important;
+	}
+
+	.buy-tickets-section .buy-tickets-text .wp-block-read-more,
+	.buy-tickets-section .buy-tickets-text a.wp-block-read-more {
+		align-self: center !important;
+		margin-top: 16px !important;
+	}
+
+	.buy-tickets-section .wp-block-post-featured-image.buy-tickets-poster img {
+		max-height: 260px !important;
+		min-height: 200px !important;
+		padding: 12px !important;
+	}
+
+	.home-upcoming-shows .event-item.home-show-card,
+	.home-upcoming-shows .wp-block-group.home-show-card {
+		grid-template-columns: 1fr !important;
+	}
+
+	.home-upcoming-shows .home-show-body,
+	.home-upcoming-shows .event-details.home-show-body {
+		align-items: center !important;
+		text-align: center !important;
+		padding: 24px 20px !important;
+	}
+
+	.home-upcoming-shows .wp-block-read-more,
+	.home-upcoming-shows a.home-show-learn-more {
+		align-self: center !important;
+	}
+
+	.onstage-show-date-line {
+		justify-content: center !important;
+	}
+
+	/* YouTube & Video Grid */
+	.youtube-grid.wp-block-columns,
+	.youtube-grid {
+		display: flex !important;
+		flex-direction: column !important;
+		gap: 20px !important;
+	}
+
+	.youtube-card {
+		width: 100% !important;
+	}
+
+	/* General Section Padding & Headings */
+	.programs,
+	.happening-now,
+	.home-upcoming-shows,
+	.behind-scenes,
+	.scholarship-intro,
+	.policies-section,
+	.eligibility-section,
+	.costume-overview-section,
+	.costume-categories-section,
+	.rental-form-cta-section,
+	.buy-tickets-section {
+		padding: 44px 16px !important;
+	}
+
+	.page-header h1,
+	h1.pink-text,
+	h1.shows-page-title,
+	h1.programs-page-title {
+		font-size: clamp(1.75rem, 5vw, 2.2rem) !important;
+		text-align: center !important;
+	}
+
+	h2,
+	.wp-block-heading {
+		font-size: clamp(1.35rem, 4vw, 1.75rem) !important;
+		text-align: center !important;
+	}
+}
+
+@media (max-width: 600px) {
+	/* 1-Column Stacking for All Grid Elements */
+	.programs-grid.wp-block-columns,
+	.news-grid.wp-block-columns,
+	.show-gallery-grid.wp-block-columns,
+	.costume-categories-grid.wp-block-columns,
+	.past-productions-grid,
+	.past-productions-gallery,
+	.policy-list,
+	.indicators-grid {
+		grid-template-columns: 1fr !important;
+		gap: 16px !important;
+	}
+
+	.program-card {
+		max-width: 400px !important;
+		margin-left: auto !important;
+		margin-right: auto !important;
+	}
+
+	.policy-card,
+	.eligibility-card,
+	.app-cta-box {
+		padding: 24px 18px !important;
+		border-radius: 8px !important;
+	}
+
+	.checkbox-label {
+		padding: 12px 14px !important;
+		font-size: 0.95rem !important;
+	}
+}
