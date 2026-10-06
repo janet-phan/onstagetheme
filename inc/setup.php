@@ -710,18 +710,23 @@ function onstage_seed_staff_users() {
 				update_user_meta( $user_id, 'onstage_staff_order', $index );
 			}
 		} else {
-			if ( empty( get_the_author_meta( 'description', $existing->ID ) ) ) {
+			$user_id = $existing->ID;
+			wp_update_user( array(
+				'ID'           => $user_id,
+				'display_name' => $data['name'],
+				'first_name'   => $data['first_name'],
+				'last_name'    => $data['last_name'],
+			) );
+			if ( empty( get_the_author_meta( 'description', $user_id ) ) ) {
 				wp_update_user( array(
-					'ID'          => $existing->ID,
+					'ID'          => $user_id,
 					'description' => $data['bio'],
 				) );
 			}
-			if ( empty( get_user_meta( $existing->ID, 'onstage_user_image', true ) ) ) {
-				update_user_meta( $existing->ID, 'onstage_user_image', $data['image'] );
+			if ( empty( get_user_meta( $user_id, 'onstage_user_image', true ) ) ) {
+				update_user_meta( $user_id, 'onstage_user_image', $data['image'] );
 			}
-			if ( '' === (string) get_user_meta( $existing->ID, 'onstage_staff_order', true ) ) {
-				update_user_meta( $existing->ID, 'onstage_staff_order', $index );
-			}
+			update_user_meta( $user_id, 'onstage_staff_order', $index );
 		}
 	}
 }

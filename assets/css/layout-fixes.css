@@ -1706,3 +1706,13 @@ p.youtube-channel-cta {
 	}
 }
 
+/* Non-clickable staff profile images */
+.staff-img,
+figure.staff-img img,
+.staff-img-col img,
+.staff-img img {
+	cursor: default !important;
+	pointer-events: none !important;
+}
+
+

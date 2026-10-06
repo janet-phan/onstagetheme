@@ -176,6 +176,10 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Standalone images (not inside a gallery block)
 		var standaloneImages = document.querySelectorAll('.wp-block-image img:not([data-lightbox-bound])');
 		standaloneImages.forEach(function (img) {
+			if (img.classList.contains('staff-img') || img.closest('.staff-img-col') || img.closest('.staff-member') || img.classList.contains('no-lightbox')) {
+				img.dataset.lightboxBound = 'true';
+				return;
+			}
 			img.dataset.lightboxBound = 'true';
 			img.style.cursor = 'pointer';
 

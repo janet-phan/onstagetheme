@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.19' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.19' );
+define( 'ONSTAGE_VERSION', '1.0.20' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.20' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -816,7 +816,7 @@ function onstage_render_staff_profiles() {
 		$img_html = '<!-- wp:column {"width":"33.33%","className":"staff-img-col"} -->' . "\n" .
 			'<div class="wp-block-column staff-img-col" style="flex-basis:33.33%">' . "\n" .
 			'<!-- wp:image {"sizeSlug":"medium","className":"staff-img"} -->' . "\n" .
-			'<figure class="wp-block-image size-medium staff-img"><img src="' . esc_url( $img ) . '" alt="' . esc_attr( $display_name ) . '"/></figure>' . "\n" .
+			'<figure class="wp-block-image size-medium staff-img no-lightbox"><img src="' . esc_url( $img ) . '" alt="' . esc_attr( $display_name ) . '" class="staff-img no-lightbox"/></figure>' . "\n" .
 			'<!-- /wp:image -->' . "\n" .
 			'</div>' . "\n" .
 			'<!-- /wp:column -->';
