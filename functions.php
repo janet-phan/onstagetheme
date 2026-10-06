@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.21' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.21' );
+define( 'ONSTAGE_VERSION', '1.0.22' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.22' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -857,13 +857,26 @@ function onstage_render_staff_profiles() {
 add_shortcode( 'onstage_staff_profiles', 'onstage_render_staff_profiles' );
 
 /**
- * Add custom Profile Photo field to WordPress User Profile edit page.
+ * Enqueue WP Media scripts on user profile edit screens in WP Admin.
+ *
+ * @param string $hook Admin page hook.
+ */
+function onstage_enqueue_admin_user_media( $hook ) {
+	if ( 'profile.php' === $hook || 'user-edit.php' === $hook ) {
+		wp_enqueue_media();
+	}
+}
+add_action( 'admin_enqueue_scripts', 'onstage_enqueue_admin_user_media' );
+
+/**
+ * Add custom Profile Photo field & Media Uploader to WordPress User Profile edit page.
  *
  * @param WP_User $user User object.
  */
 function onstage_user_profile_fields( $user ) {
-	$image = get_user_meta( $user->ID, 'onstage_user_image', true );
-	$show  = get_user_meta( $user->ID, 'onstage_show_on_about', true );
+	$image     = get_user_meta( $user->ID, 'onstage_user_image', true );
+	$show      = get_user_meta( $user->ID, 'onstage_show_on_about', true );
+	$image_url = onstage_get_user_avatar_url( $user );
 
 	if ( '' === (string) $show ) {
 		$show = ( 'devgirl' === $user->user_login ) ? '0' : '1';
@@ -882,10 +895,45 @@ function onstage_user_profile_fields( $user ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="onstage_user_image"><?php esc_html_e( 'Staff Profile Photo (filename or URL)', 'onstage' ); ?></label></th>
+			<th><label for="onstage_user_image"><?php esc_html_e( 'Staff Profile Photo', 'onstage' ); ?></label></th>
 			<td>
-				<input type="text" name="onstage_user_image" id="onstage_user_image" value="<?php echo esc_attr( $image ); ?>" class="regular-text" />
-				<p class="description"><?php esc_html_e( 'Enter a filename in assets/images/ (e.g. staff-linda.jpg) or a full image URL. If left empty, avatar or default photo will be used.', 'onstage' ); ?></p>
+				<div style="display:flex; align-items:flex-start; gap:15px; margin-bottom:10px;">
+					<img id="onstage_user_image_preview" src="<?php echo esc_url( $image_url ); ?>" alt="Profile Preview" style="width:90px; height:90px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1; background:#f8fafc; flex-shrink:0;" />
+					<div>
+						<input type="text" name="onstage_user_image" id="onstage_user_image" value="<?php echo esc_attr( $image ); ?>" class="regular-text" placeholder="Upload an image or enter filename/URL" style="margin-bottom:8px; display:block; width:100%; max-width:400px;" />
+						<button type="button" class="button button-secondary" id="onstage_upload_user_image_btn"><?php esc_html_e( 'Choose / Upload Photo', 'onstage' ); ?></button>
+						<button type="button" class="button button-link-delete" id="onstage_remove_user_image_btn" style="margin-left:8px; text-decoration:none;"><?php esc_html_e( 'Remove Photo', 'onstage' ); ?></button>
+						<p class="description" style="margin-top:6px;"><?php esc_html_e( 'Click "Choose / Upload Photo" to pick an image from the Media Library, or type an asset filename/URL.', 'onstage' ); ?></p>
+					</div>
+				</div>
+				<script>
+				jQuery(document).ready(function($) {
+					var frame;
+					$('#onstage_upload_user_image_btn').on('click', function(e) {
+						e.preventDefault();
+						if (frame) {
+							frame.open();
+							return;
+						}
+						frame = wp.media({
+							title: '<?php echo esc_js( __( 'Select or Upload Staff Profile Photo', 'onstage' ) ); ?>',
+							button: { text: '<?php echo esc_js( __( 'Use Profile Photo', 'onstage' ) ); ?>' },
+							multiple: false
+						});
+						frame.on('select', function() {
+							var attachment = frame.state().get('selection').first().toJSON();
+							$('#onstage_user_image').val(attachment.url);
+							$('#onstage_user_image_preview').attr('src', attachment.url);
+						});
+						frame.open();
+					});
+					$('#onstage_remove_user_image_btn').on('click', function(e) {
+						e.preventDefault();
+						$('#onstage_user_image').val('');
+						$('#onstage_user_image_preview').attr('src', '<?php echo esc_js( onstage_img( 'staff-linda.jpg' ) ); ?>');
+					});
+				});
+				</script>
 			</td>
 		</tr>
 	</table>
