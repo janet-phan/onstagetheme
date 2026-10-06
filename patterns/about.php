@@ -68,7 +68,9 @@ $mission = onstage_img( 'missionstatement.jpg' );
 	<!-- wp:heading {"textAlign":"center","className":"pink-text"} -->
 	<h2 class="wp-block-heading has-text-align-center pink-text">LEADERSHIP / INSTRUCTORS</h2>
 	<!-- /wp:heading -->
-<?php echo onstage_render_staff_profiles(); ?>
+	<!-- wp:shortcode -->
+	[onstage_staff_profiles]
+	<!-- /wp:shortcode -->
 </div>
 <!-- /wp:group -->
 
