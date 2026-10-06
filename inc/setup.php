@@ -708,6 +708,7 @@ function onstage_seed_staff_users() {
 			if ( ! is_wp_error( $user_id ) && $user_id ) {
 				update_user_meta( $user_id, 'onstage_user_image', $data['image'] );
 				update_user_meta( $user_id, 'onstage_staff_order', $index );
+				update_user_meta( $user_id, 'onstage_show_on_about', '1' );
 			}
 		} else {
 			$user_id = $existing->ID;
@@ -727,6 +728,12 @@ function onstage_seed_staff_users() {
 				update_user_meta( $user_id, 'onstage_user_image', $data['image'] );
 			}
 			update_user_meta( $user_id, 'onstage_staff_order', $index );
+			update_user_meta( $user_id, 'onstage_show_on_about', '1' );
 		}
+	}
+
+	$devgirl = get_user_by( 'login', 'devgirl' );
+	if ( $devgirl && '' === (string) get_user_meta( $devgirl->ID, 'onstage_show_on_about', true ) ) {
+		update_user_meta( $devgirl->ID, 'onstage_show_on_about', '0' );
 	}
 }

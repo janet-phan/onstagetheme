@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.20' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.20' );
+define( 'ONSTAGE_VERSION', '1.0.21' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.21' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -771,11 +771,18 @@ function onstage_get_staff_users() {
 	$other_users = array();
 
 	foreach ( $users as $u ) {
+		$show  = get_user_meta( $u->ID, 'onstage_show_on_about', true );
 		$bio   = trim( (string) get_the_author_meta( 'description', $u->ID ) );
 		$img   = get_user_meta( $u->ID, 'onstage_user_image', true );
 		$order = get_user_meta( $u->ID, 'onstage_staff_order', true );
 
-		if ( '' === $bio && empty( $img ) && '' === (string) $order && 'devgirl' === $u->user_login ) {
+		// If show_on_about meta is explicitly set to '0', skip user.
+		if ( '0' === (string) $show ) {
+			continue;
+		}
+
+		// If meta is not set yet, skip tech accounts (devgirl) or users with no bio and no order/image.
+		if ( '' === (string) $show && ( 'devgirl' === $u->user_login || ( '' === $bio && empty( $img ) && '' === (string) $order ) ) ) {
 			continue;
 		}
 
@@ -856,9 +863,24 @@ add_shortcode( 'onstage_staff_profiles', 'onstage_render_staff_profiles' );
  */
 function onstage_user_profile_fields( $user ) {
 	$image = get_user_meta( $user->ID, 'onstage_user_image', true );
+	$show  = get_user_meta( $user->ID, 'onstage_show_on_about', true );
+
+	if ( '' === (string) $show ) {
+		$show = ( 'devgirl' === $user->user_login ) ? '0' : '1';
+	}
 	?>
 	<h3><?php esc_html_e( 'On Stage Staff Profile Settings', 'onstage' ); ?></h3>
 	<table class="form-table">
+		<tr>
+			<th><label for="onstage_show_on_about"><?php esc_html_e( 'Display on About Page', 'onstage' ); ?></label></th>
+			<td>
+				<label for="onstage_show_on_about">
+					<input type="checkbox" name="onstage_show_on_about" id="onstage_show_on_about" value="1" <?php checked( '1', (string) $show ); ?> />
+					<?php esc_html_e( 'Show this user in the Leadership / Instructors section on the About page.', 'onstage' ); ?>
+				</label>
+				<p class="description"><?php esc_html_e( 'Uncheck for developer or administrative accounts (such as devgirl) that should not appear publicly.', 'onstage' ); ?></p>
+			</td>
+		</tr>
 		<tr>
 			<th><label for="onstage_user_image"><?php esc_html_e( 'Staff Profile Photo (filename or URL)', 'onstage' ); ?></label></th>
 			<td>
@@ -873,7 +895,7 @@ add_action( 'show_user_profile', 'onstage_user_profile_fields' );
 add_action( 'edit_user_profile', 'onstage_user_profile_fields' );
 
 /**
- * Save custom Profile Photo field.
+ * Save custom Profile Photo and Display on About Page fields.
  *
  * @param int $user_id User ID.
  */
@@ -881,6 +903,9 @@ function onstage_save_user_profile_fields( $user_id ) {
 	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return;
 	}
+	$show = isset( $_POST['onstage_show_on_about'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	update_user_meta( $user_id, 'onstage_show_on_about', $show );
+
 	if ( isset( $_POST['onstage_user_image'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		update_user_meta( $user_id, 'onstage_user_image', sanitize_text_field( wp_unslash( $_POST['onstage_user_image'] ) ) );
 	}
