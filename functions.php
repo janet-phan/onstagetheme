@@ -822,28 +822,19 @@ function onstage_render_staff_profiles() {
 		$img      = onstage_get_user_avatar_url( $user );
 		$is_even  = ( 0 === $index % 2 );
 		$class    = $is_even ? 'staff-member staff-left' : 'staff-member staff-right';
-		$img_html = '<!-- wp:column {"width":"33.33%","className":"staff-img-col"} -->' . "\n" .
-			'<div class="wp-block-column staff-img-col" style="flex-basis:33.33%">' . "\n" .
-			'<!-- wp:image {"sizeSlug":"medium","className":"staff-img"} -->' . "\n" .
+
+		$img_html = '<div class="wp-block-column staff-img-col" style="flex-basis:33.33%">' . "\n" .
 			'<figure class="wp-block-image size-medium staff-img no-lightbox"><img src="' . esc_url( $img ) . '" alt="' . esc_attr( $display_name ) . '" class="staff-img no-lightbox"/></figure>' . "\n" .
-			'<!-- /wp:image -->' . "\n" .
-			'</div>' . "\n" .
-			'<!-- /wp:column -->';
+			'</div>';
 
-		$text_html = '<!-- wp:column {"className":"staff-text-col"} -->' . "\n" .
-			'<div class="wp-block-column staff-text-col">' . "\n" .
-			'<!-- wp:heading {"level":3,"className":"pink-text"} -->' . "\n" .
-			'<h3 class="wp-block-heading pink-text">' . esc_html( $display_name ) . '</h3>' . "\n" .
-			'<!-- /wp:heading -->' . "\n";
+		$text_html = '<div class="wp-block-column staff-text-col">' . "\n" .
+			'<h3 class="wp-block-heading pink-text">' . esc_html( $display_name ) . '</h3>' . "\n";
 		foreach ( $paragraphs as $para ) {
-			$text_html .= '<!-- wp:paragraph -->' . "\n" .
-				'<p>' . esc_html( $para ) . '</p>' . "\n" .
-				'<!-- /wp:paragraph -->' . "\n";
+			$text_html .= '<p>' . esc_html( $para ) . '</p>' . "\n";
 		}
-		$text_html .= '</div>' . "\n" . '<!-- /wp:column -->';
+		$text_html .= '</div>';
 
-		$html .= '<!-- wp:columns {"verticalAlignment":"center","className":"' . esc_attr( $class ) . '"} -->' . "\n" .
-			'<div class="wp-block-columns ' . esc_attr( $class ) . ' are-vertically-aligned-center">' . "\n";
+		$html .= '<div class="wp-block-columns ' . esc_attr( $class ) . ' are-vertically-aligned-center">' . "\n";
 
 		if ( $is_even ) {
 			$html .= $img_html . "\n" . $text_html . "\n";
@@ -851,7 +842,7 @@ function onstage_render_staff_profiles() {
 			$html .= $text_html . "\n" . $img_html . "\n";
 		}
 
-		$html .= '</div>' . "\n" . '<!-- /wp:columns -->' . "\n";
+		$html .= '</div>' . "\n";
 	}
 
 	return $html;
