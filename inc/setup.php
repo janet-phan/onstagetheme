@@ -30,6 +30,7 @@ function onstage_maybe_seed() {
 			onstage_seed_shows();
 			onstage_publish_scheduled_shows();
 			onstage_seed_classes();
+			onstage_seed_staff_users();
 			$ids = onstage_seed_pages();
 			onstage_seed_menu( $ids );
 			onstage_configure_reading( $ids );
@@ -69,6 +70,7 @@ function onstage_maybe_refresh_seeded_content() {
 		onstage_reset_customized_templates();
 		onstage_seed_logo( true );
 		onstage_seed_classes();
+		onstage_seed_staff_users();
 		onstage_write_seeded_pages();
 		onstage_publish_scheduled_shows();
 
@@ -674,4 +676,52 @@ function onstage_configure_reading( $ids ) {
 	}
 	update_option( 'show_on_front', 'page' );
 	update_option( 'page_on_front', (int) $ids['home'] );
+}
+
+/**
+ * Create WP Users for the default staff members if they do not exist.
+ */
+function onstage_seed_staff_users() {
+	if ( ! function_exists( 'onstage_default_staff_data' ) ) {
+		return;
+	}
+
+	$staff_data = onstage_default_staff_data();
+	foreach ( $staff_data as $index => $data ) {
+		$username = $data['slug'];
+		$existing = get_user_by( 'login', $username );
+		if ( ! $existing ) {
+			$existing = get_user_by( 'email', $data['email'] );
+		}
+
+		if ( ! $existing ) {
+			$user_id = wp_insert_user( array(
+				'user_login'   => $username,
+				'user_pass'    => wp_generate_password(),
+				'user_email'   => $data['email'],
+				'display_name' => $data['name'],
+				'first_name'   => $data['first_name'],
+				'last_name'    => $data['last_name'],
+				'description'  => $data['bio'],
+				'role'         => 'editor',
+			) );
+			if ( ! is_wp_error( $user_id ) && $user_id ) {
+				update_user_meta( $user_id, 'onstage_user_image', $data['image'] );
+				update_user_meta( $user_id, 'onstage_staff_order', $index );
+			}
+		} else {
+			if ( empty( get_the_author_meta( 'description', $existing->ID ) ) ) {
+				wp_update_user( array(
+					'ID'          => $existing->ID,
+					'description' => $data['bio'],
+				) );
+			}
+			if ( empty( get_user_meta( $existing->ID, 'onstage_user_image', true ) ) ) {
+				update_user_meta( $existing->ID, 'onstage_user_image', $data['image'] );
+			}
+			if ( '' === (string) get_user_meta( $existing->ID, 'onstage_staff_order', true ) ) {
+				update_user_meta( $existing->ID, 'onstage_staff_order', $index );
+			}
+		}
+	}
 }

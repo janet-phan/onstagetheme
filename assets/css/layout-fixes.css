@@ -47,21 +47,41 @@ header.wp-block-template-part .top-nav {
 }
 
 /* --- Home hero: equal-width CTA bars & large H1 matching reference preview --- */
-.hero-cover .hero-text-row.wp-block-columns {
-	display: grid !important;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-	gap: 48px !important;
-	align-items: stretch !important;
-	width: 100% !important;
-}
-
-.hero-cover .hero-left,
-.hero-cover .hero-right {
+.hero-cover .wp-block-cover__inner-container {
 	display: flex !important;
 	flex-direction: column !important;
 	justify-content: space-between !important;
+	gap: 36px !important;
 	width: 100% !important;
+	max-width: 1200px !important;
+	margin: 0 auto !important;
+}
+
+.hero-cover .hero-text-row.wp-block-columns,
+.wp-block-cover.hero-cover .hero-text-row.wp-block-columns {
+	display: flex !important;
+	flex-direction: row !important;
+	justify-content: space-between !important;
+	align-items: flex-end !important;
+	width: 100% !important;
+	gap: 48px !important;
+	margin-bottom: 0 !important;
+}
+
+.hero-cover .hero-left.wp-block-column,
+.hero-cover .hero-right.wp-block-column,
+.hero-cover .wp-block-column.hero-left,
+.hero-cover .wp-block-column.hero-right,
+.hero-cover .hero-left,
+.hero-cover .hero-right {
+	flex: 1 1 0% !important;
+	width: 50% !important;
+	max-width: 50% !important;
+	min-width: 0 !important;
 	box-sizing: border-box !important;
+	display: flex !important;
+	flex-direction: column !important;
+	justify-content: space-between !important;
 }
 
 .hero-cover h1.hero-title,
@@ -74,49 +94,64 @@ header.wp-block-template-part .top-nav {
 	letter-spacing: 2px !important;
 	line-height: 1.15 !important;
 	color: #ffffff !important;
-	margin-bottom: 20px !important;
+	margin-bottom: 0 !important;
 }
 
-.hero-cover .hero-cta,
-.hero-cover p.hero-cta,
-.hero-cover .hero-cta .wp-block-button,
-.hero-cover .wp-block-button.btn-hero-large,
-.hero-cover .wp-block-button.btn-white-pink {
+.hero-cover .hero-buttons-row,
+.hero-cover .wp-block-buttons,
+.wp-block-cover.hero-cover .wp-block-buttons {
+	display: flex !important;
+	flex-direction: row !important;
+	justify-content: space-between !important;
+	align-items: center !important;
 	width: 100% !important;
-	max-width: none !important;
-	background: transparent !important;
-	border: none !important;
-	padding: 0 !important;
-	box-shadow: none !important;
-	margin-top: auto !important;
+	gap: 30px !important;
+	margin-top: 24px !important;
+	margin-bottom: 0 !important;
 }
 
+.hero-cover .hero-buttons-row > *,
+.hero-cover .wp-block-buttons > .wp-block-button,
+.hero-cover .wp-block-buttons > *,
+.hero-cover .hero-cta {
+	flex: 1 1 0% !important;
+	width: 50% !important;
+	max-width: 50% !important;
+	min-width: 0 !important;
+	box-sizing: border-box !important;
+	margin: 0 !important;
+}
+
+.hero-cover .hero-buttons-row a,
+.hero-cover .wp-block-buttons .wp-block-button__link,
 .hero-cover a.btn-hero-large,
 .hero-cover a.btn-white-pink,
-.hero-cover .hero-cta .wp-block-button__link {
-	display: flex !important;
-	align-items: center !important;
-	justify-content: center !important;
+.hero-cover .hero-cta a {
 	width: 100% !important;
-	min-width: 100% !important;
+	min-width: 0 !important;
 	max-width: 100% !important;
 	box-sizing: border-box !important;
 	background: #ffffff !important;
 	color: #e95baf !important;
 	border: 3px solid #e95baf !important;
 	border-radius: 4px !important;
-	padding: 18px 24px !important;
-	font-size: clamp(1.2rem, 1.8vw, 1.5rem) !important;
+	padding: 16px 20px !important;
+	font-size: clamp(1.1rem, 1.6vw, 1.4rem) !important;
 	font-weight: 800 !important;
 	text-decoration: none !important;
 	text-transform: uppercase !important;
+	text-align: center !important;
 	height: 64px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
 }
 
 .hero-cover a.btn-hero-large:hover,
 .hero-cover a.btn-white-pink:hover,
-.hero-cover .hero-cta .wp-block-button__link:hover,
-.hero-cover .hero-cta .wp-block-button__link:focus {
+.hero-cover .hero-cta a:hover,
+.hero-cover .wp-block-buttons .wp-block-button__link:hover,
+.hero-cover .wp-block-buttons .wp-block-button__link:focus {
 	background: #e95baf !important;
 	color: #ffffff !important;
 	border-color: #e95baf !important;
@@ -1033,22 +1068,138 @@ p.youtube-channel-cta {
 }
 
 /* --- Costume Rentals: body text size, image crop, bold heading --- */
+.costume-overview-section {
+	padding: 60px 20px !important;
+}
+
+.costume-overview-section h1,
+.costume-overview-section h1.pink-text {
+	font-size: clamp(2.4rem, 4.5vw, 3.2rem) !important;
+	font-weight: 800 !important;
+	color: #E95BAF !important;
+	letter-spacing: 0.05em !important;
+	margin-bottom: 40px !important;
+}
+
+.costume-overview-section .overview-row,
+.costume-overview-section .overview-row-flip {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr !important;
+	gap: 48px !important;
+	align-items: center !important;
+	margin-bottom: 50px !important;
+}
+
+.costume-overview-section .overview-text h2,
+.costume-overview-section .overview-text h2.green-text {
+	color: #38E86B !important;
+	font-size: clamp(1.5rem, 3vw, 2.1rem) !important;
+	font-weight: 800 !important;
+	letter-spacing: 0.04em !important;
+	text-transform: uppercase !important;
+	margin: 0 0 16px !important;
+}
+
 .costume-overview-section .overview-text p,
 .costume-overview-section p {
-	font-size: 1.1rem !important;
-	line-height: 1.7 !important;
+	font-size: 1.05rem !important;
+	line-height: 1.65 !important;
 	color: #333333 !important;
+	margin: 0 !important;
+}
+
+.costume-overview-section .overview-image,
+.overview-image {
+	width: 100% !important;
+	height: 320px !important;
+	max-height: 320px !important;
+	overflow: hidden !important;
+	border-radius: 10px !important;
 }
 
 .costume-overview-section .overview-image img,
 .overview-image img,
 .overview-row-flip .overview-image img {
 	width: 100% !important;
-	height: 100% !important;
-	min-height: 280px !important;
+	height: 320px !important;
+	max-height: 320px !important;
 	object-fit: cover !important;
 	object-position: center top !important;
 	display: block !important;
+	border-radius: 10px !important;
+}
+
+/* Category cards in Costume Rentals */
+.costume-categories-section {
+	background-color: #81D4FA !important;
+	padding: 70px 20px !important;
+}
+
+.costume-categories-section h2 {
+	font-size: clamp(1.8rem, 3.5vw, 2.4rem) !important;
+	font-weight: 800 !important;
+	color: #ffffff !important;
+	letter-spacing: 0.04em !important;
+	margin-bottom: 10px !important;
+}
+
+.costume-categories-section p {
+	font-size: 1rem !important;
+	color: #ffffff !important;
+	margin-bottom: 36px !important;
+}
+
+.costume-categories-grid {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 28px !important;
+	max-width: 1100px !important;
+	margin: 0 auto 48px !important;
+}
+
+.costume-categories-grid a.category-card {
+	display: flex !important;
+	flex-direction: column !important;
+	background: #ffffff !important;
+	border-radius: 10px !important;
+	overflow: hidden !important;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+	text-decoration: none !important;
+}
+
+.costume-categories-grid a.category-card .category-title {
+	padding: 16px 12px !important;
+	background: #ffffff !important;
+	color: #1e1e1e !important;
+	font-weight: 800 !important;
+	font-size: 0.95rem !important;
+	text-transform: uppercase !important;
+	text-align: center !important;
+}
+
+.costume-categories-grid a.category-card img {
+	width: 100% !important;
+	height: 220px !important;
+	max-height: 220px !important;
+	object-fit: cover !important;
+	object-position: center top !important;
+	display: block !important;
+	background: #ffffff !important;
+	border-radius: 0 !important;
+}
+
+.costume-categories-grid a.category-card .costume-gallery-label {
+	padding: 14px 12px !important;
+	background: #ffffff !important;
+	color: #6A3FC7 !important;
+	font-weight: 800 !important;
+	font-size: 0.85rem !important;
+	text-transform: uppercase !important;
+	text-align: center !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 8px !important;
 }
 
 .rental-form-cta-section h2,
@@ -1208,14 +1359,20 @@ p.youtube-channel-cta {
 		min-height: auto !important;
 	}
 
-	.hero-cover .hero-text-row.wp-block-columns {
-		grid-template-columns: 1fr !important;
-		gap: 32px !important;
+	.hero-cover .hero-text-row.wp-block-columns,
+	.hero-cover .hero-buttons-row {
+		flex-direction: column !important;
+		gap: 20px !important;
 		text-align: center !important;
+		width: 100% !important;
 	}
 
 	.hero-cover .hero-left,
-	.hero-cover .hero-right {
+	.hero-cover .hero-right,
+	.hero-cover .hero-left.wp-block-column,
+	.hero-cover .hero-right.wp-block-column {
+		width: 100% !important;
+		max-width: 100% !important;
 		align-items: center !important;
 		text-align: center !important;
 	}
@@ -1234,17 +1391,12 @@ p.youtube-channel-cta {
 		text-align: center !important;
 	}
 
-	.hero-cover .hero-cta,
-	.hero-cover p.hero-cta {
-		display: flex !important;
-		justify-content: center !important;
-		width: 100% !important;
-		margin-top: 16px !important;
-	}
-
+	.hero-cover .hero-buttons-row a.btn-hero-large,
+	.hero-cover .hero-buttons-row a.btn-white-pink,
 	.hero-cover a.btn-hero-large,
 	.hero-cover a.btn-white-pink {
-		max-width: 320px !important;
+		width: 100% !important;
+		max-width: 340px !important;
 		margin: 0 auto !important;
 		padding: 16px 24px !important;
 		font-size: 1.15rem !important;
@@ -1401,3 +1553,156 @@ p.youtube-channel-cta {
 		font-size: 0.95rem !important;
 	}
 }
+
+/* =========================================
+   ON STAGE LIGHTBOX MODAL STYLES
+   ========================================= */
+.onstage-lightbox-modal {
+	position: fixed !important;
+	inset: 0 !important;
+	z-index: 999999 !important;
+	display: none !important;
+	align-items: center !important;
+	justify-content: center !important;
+	opacity: 0;
+	transition: opacity 0.25s ease !important;
+}
+
+.onstage-lightbox-modal.is-active {
+	display: flex !important;
+	opacity: 1 !important;
+}
+
+.onstage-lightbox-overlay {
+	position: absolute !important;
+	inset: 0 !important;
+	background: rgba(0, 0, 0, 0.9) !important;
+	backdrop-filter: blur(8px) !important;
+	z-index: 1 !important;
+}
+
+.onstage-lightbox-content {
+	position: relative !important;
+	z-index: 2 !important;
+	width: 92vw !important;
+	max-width: 1100px !important;
+	max-height: 90vh !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.onstage-lightbox-stage {
+	position: relative !important;
+	max-width: 100% !important;
+	max-height: 80vh !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.onstage-lightbox-image {
+	max-width: 100% !important;
+	max-height: 80vh !important;
+	object-fit: contain !important;
+	border-radius: 6px !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+.onstage-lightbox-close {
+	position: absolute !important;
+	top: -48px !important;
+	right: 0 !important;
+	background: transparent !important;
+	border: none !important;
+	color: #ffffff !important;
+	font-size: 3rem !important;
+	line-height: 1 !important;
+	cursor: pointer !important;
+	padding: 0 8px !important;
+	z-index: 10 !important;
+	transition: color 0.2s ease, transform 0.2s ease !important;
+}
+
+.onstage-lightbox-close:hover {
+	color: #E95BAF !important;
+	transform: scale(1.15) !important;
+}
+
+.onstage-lightbox-prev,
+.onstage-lightbox-next {
+	position: absolute !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	background: rgba(255, 255, 255, 0.95) !important;
+	color: #1e1e1e !important;
+	border: none !important;
+	width: 52px !important;
+	height: 52px !important;
+	border-radius: 50% !important;
+	font-size: 1.5rem !important;
+	font-weight: 700 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+	z-index: 10 !important;
+	transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease !important;
+}
+
+.onstage-lightbox-prev {
+	left: -70px !important;
+}
+
+.onstage-lightbox-next {
+	right: -70px !important;
+}
+
+.onstage-lightbox-prev:hover,
+.onstage-lightbox-next:hover {
+	background: #E95BAF !important;
+	color: #ffffff !important;
+	transform: translateY(-50%) scale(1.1) !important;
+}
+
+.onstage-lightbox-meta {
+	margin-top: 16px !important;
+	text-align: center !important;
+	color: #ffffff !important;
+}
+
+.onstage-lightbox-counter {
+	font-size: 0.95rem !important;
+	font-weight: 700 !important;
+	letter-spacing: 0.05em !important;
+	opacity: 0.85 !important;
+}
+
+.onstage-lightbox-caption {
+	font-size: 1.05rem !important;
+	margin-top: 4px !important;
+}
+
+@media (max-width: 850px) {
+	.onstage-lightbox-prev {
+		left: 10px !important;
+		width: 44px !important;
+		height: 44px !important;
+		font-size: 1.2rem !important;
+	}
+
+	.onstage-lightbox-next {
+		right: 10px !important;
+		width: 44px !important;
+		height: 44px !important;
+		font-size: 1.2rem !important;
+	}
+
+	.onstage-lightbox-close {
+		top: -44px !important;
+		right: 0 !important;
+	}
+}
+

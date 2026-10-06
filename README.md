@@ -66,6 +66,7 @@ To force a full first-time seed again (developers only): delete the `onstage_set
 | Home, About, Programs, Shows page intro, Scholarships, Costumes, Gallery | **Pages**. Each page is core blocks. Patterns under **On Stage** can be re-inserted. |
 | Productions (title, dates, ticket URL, artwork) | **Shows** (custom post type). Not mixed with blog Posts. |
 | Class schedule | **Classes** (custom post type). Weekday, time, ages, instructor, category color, optional NEW badge. The Programs page grid updates automatically. |
+| Leadership / Staff Profiles | **Users**. Display names, bios (Biographical Info), and profile photos are pulled dynamically from WordPress users, preserving the alternating layout without editing hard-coded blocks. |
 | Logo | **Appearance → Editor → Header**, or **Appearance → Customize** is limited; prefer Site Editor → Site Logo. |
 | Privacy / Terms | Placeholder pages linked from the footer. Replace copy before any public launch. |
 

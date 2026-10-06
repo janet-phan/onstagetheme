@@ -34,31 +34,31 @@ $studio  = ONSTAGE_STUDIO_URL;
 <div class="wp-block-cover alignfull hero-cover" style="min-height:85vh"><span aria-hidden="true" class="wp-block-cover__background has-dark-background-color has-background-dim"></span><img class="wp-block-cover__image-background" alt="" src="<?php echo $hero; ?>" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
 	<!-- wp:columns {"verticalAlignment":"bottom","className":"hero-text-row"} -->
 	<div class="wp-block-columns hero-text-row are-vertically-aligned-bottom">
-		<!-- wp:column {"verticalAlignment":"bottom","className":"hero-left"} -->
-		<div class="wp-block-column is-vertically-aligned-bottom hero-left">
+		<!-- wp:column {"width":"50%","verticalAlignment":"bottom","className":"hero-left"} -->
+		<div class="wp-block-column is-vertically-aligned-bottom hero-left" style="flex-basis:50%">
 			<!-- wp:heading {"level":1,"className":"hero-title"} -->
 			<h1 class="wp-block-heading hero-title">ON STAGE<br>THEATRICAL<br>PRODUCTIONS,<br>INC</h1>
 			<!-- /wp:heading -->
-			<!-- wp:html -->
-			<p class="hero-cta"><a class="btn btn-white-pink btn-hero-large" href="<?php echo esc_url( $tickets ); ?>" target="_blank" rel="noopener noreferrer">Buy Tickets</a></p>
-			<!-- /wp:html -->
 		</div>
 		<!-- /wp:column -->
-		<!-- wp:column {"verticalAlignment":"bottom","className":"hero-right"} -->
-		<div class="wp-block-column is-vertically-aligned-bottom hero-right">
+		<!-- wp:column {"width":"50%","verticalAlignment":"bottom","className":"hero-right"} -->
+		<div class="wp-block-column is-vertically-aligned-bottom hero-right" style="flex-basis:50%">
 			<!-- wp:heading {"textAlign":"right","level":2,"className":"hero-subtitle"} -->
 			<h2 class="wp-block-heading has-text-align-right hero-subtitle">Helping Students Build Confidence and Shine on Stage</h2>
 			<!-- /wp:heading -->
 			<!-- wp:paragraph {"align":"right","className":"hero-desc"} -->
 			<p class="has-text-align-right hero-desc">Acting, Musical Theatre, Dance, and performance opportunities led by professional artists in a supportive, family-centered environment.</p>
 			<!-- /wp:paragraph -->
-			<!-- wp:html -->
-			<p class="hero-cta"><a class="btn btn-white-pink btn-hero-large" href="<?php echo esc_url( $studio ); ?>" target="_blank" rel="noopener noreferrer">Join the Studio</a></p>
-			<!-- /wp:html -->
 		</div>
 		<!-- /wp:column -->
 	</div>
 	<!-- /wp:columns -->
+	<!-- wp:html -->
+	<div class="hero-buttons-row">
+		<a class="btn btn-white-pink btn-hero-large" href="<?php echo esc_url( $tickets ); ?>" target="_blank" rel="noopener noreferrer">Buy Tickets</a>
+		<a class="btn btn-white-pink btn-hero-large" href="<?php echo esc_url( $studio ); ?>" target="_blank" rel="noopener noreferrer">Join the Studio</a>
+	</div>
+	<!-- /wp:html -->
 </div></div>
 <!-- /wp:cover -->
 
