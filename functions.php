@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.22' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.22' );
+define( 'ONSTAGE_VERSION', '1.0.23' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.23' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -772,17 +772,19 @@ function onstage_get_staff_users() {
 
 	foreach ( $users as $u ) {
 		$show  = get_user_meta( $u->ID, 'onstage_show_on_about', true );
-		$bio   = trim( (string) get_the_author_meta( 'description', $u->ID ) );
-		$img   = get_user_meta( $u->ID, 'onstage_user_image', true );
 		$order = get_user_meta( $u->ID, 'onstage_staff_order', true );
 
-		// If show_on_about meta is explicitly set to '0', skip user.
+		if ( '' === (string) $show ) {
+			$show = ( 'devgirl' === $u->user_login ) ? '0' : '1';
+		}
+
+		// Skip explicitly hidden users ('0').
 		if ( '0' === (string) $show ) {
 			continue;
 		}
 
-		// If meta is not set yet, skip tech accounts (devgirl) or users with no bio and no order/image.
-		if ( '' === (string) $show && ( 'devgirl' === $u->user_login || ( '' === $bio && empty( $img ) && '' === (string) $order ) ) ) {
+		// Skip devgirl by default unless explicitly checked ('1').
+		if ( 'devgirl' === $u->user_login && '1' !== (string) $show ) {
 			continue;
 		}
 
@@ -811,10 +813,10 @@ function onstage_render_staff_profiles() {
 	$html = '';
 	foreach ( $users as $index => $user ) {
 		$display_name = $user->display_name ? $user->display_name : $user->user_login;
-		$bio          = get_the_author_meta( 'description', $user->ID );
-		$paragraphs   = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n\r\n|\n\n|\r\r/', (string) $bio ) ), 'strlen' ) );
-		if ( empty( $paragraphs ) && ! empty( trim( (string) $bio ) ) ) {
-			$paragraphs = array( trim( (string) $bio ) );
+		$bio        = get_the_author_meta( 'description', $user->ID );
+		$paragraphs = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n\r\n|\n\n|\r\r/', (string) $bio ) ), 'strlen' ) );
+		if ( empty( $paragraphs ) ) {
+			$paragraphs = array( sprintf( __( '%s is an instructor and team member at On Stage Academy of Performing Arts.', 'onstage' ), $display_name ) );
 		}
 
 		$img      = onstage_get_user_avatar_url( $user );
@@ -862,7 +864,7 @@ add_shortcode( 'onstage_staff_profiles', 'onstage_render_staff_profiles' );
  * @param string $hook Admin page hook.
  */
 function onstage_enqueue_admin_user_media( $hook ) {
-	if ( 'profile.php' === $hook || 'user-edit.php' === $hook ) {
+	if ( 'profile.php' === $hook || 'user-edit.php' === $hook || 'user-new.php' === $hook ) {
 		wp_enqueue_media();
 	}
 }
@@ -871,15 +873,17 @@ add_action( 'admin_enqueue_scripts', 'onstage_enqueue_admin_user_media' );
 /**
  * Add custom Profile Photo field & Media Uploader to WordPress User Profile edit page.
  *
- * @param WP_User $user User object.
+ * @param WP_User|string $user User object or string context.
  */
 function onstage_user_profile_fields( $user ) {
-	$image     = get_user_meta( $user->ID, 'onstage_user_image', true );
-	$show      = get_user_meta( $user->ID, 'onstage_show_on_about', true );
-	$image_url = onstage_get_user_avatar_url( $user );
+	$user_id   = ( $user instanceof WP_User ) ? $user->ID : 0;
+	$username  = ( $user instanceof WP_User ) ? $user->user_login : '';
+	$image     = $user_id ? get_user_meta( $user_id, 'onstage_user_image', true ) : '';
+	$show      = $user_id ? get_user_meta( $user_id, 'onstage_show_on_about', true ) : '1';
+	$image_url = $user_id ? onstage_get_user_avatar_url( $user_id ) : onstage_img( 'staff-linda.jpg' );
 
 	if ( '' === (string) $show ) {
-		$show = ( 'devgirl' === $user->user_login ) ? '0' : '1';
+		$show = ( 'devgirl' === $username ) ? '0' : '1';
 	}
 	?>
 	<h3><?php esc_html_e( 'On Stage Staff Profile Settings', 'onstage' ); ?></h3>
@@ -941,6 +945,7 @@ function onstage_user_profile_fields( $user ) {
 }
 add_action( 'show_user_profile', 'onstage_user_profile_fields' );
 add_action( 'edit_user_profile', 'onstage_user_profile_fields' );
+add_action( 'user_new_form', 'onstage_user_profile_fields' );
 
 /**
  * Save custom Profile Photo and Display on About Page fields.
@@ -948,10 +953,22 @@ add_action( 'edit_user_profile', 'onstage_user_profile_fields' );
  * @param int $user_id User ID.
  */
 function onstage_save_user_profile_fields( $user_id ) {
-	if ( ! current_user_can( 'edit_user', $user_id ) ) {
+	if ( ! current_user_can( 'edit_user', $user_id ) && ! current_user_can( 'create_users' ) ) {
 		return;
 	}
-	$show = isset( $_POST['onstage_show_on_about'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+	$u        = get_userdata( $user_id );
+	$username = $u ? $u->user_login : '';
+
+	if ( isset( $_POST['onstage_show_on_about'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$show = '1';
+	} else {
+		if ( isset( $_POST['user_login'] ) || isset( $_POST['email'] ) || isset( $_POST['first_name'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$show = '0';
+		} else {
+			$show = ( 'devgirl' === $username ) ? '0' : '1';
+		}
+	}
 	update_user_meta( $user_id, 'onstage_show_on_about', $show );
 
 	if ( isset( $_POST['onstage_user_image'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -960,4 +977,5 @@ function onstage_save_user_profile_fields( $user_id ) {
 }
 add_action( 'personal_options_update', 'onstage_save_user_profile_fields' );
 add_action( 'edit_user_profile_update', 'onstage_save_user_profile_fields' );
+add_action( 'user_register', 'onstage_save_user_profile_fields' );
 
