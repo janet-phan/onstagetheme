@@ -862,6 +862,64 @@ function onstage_enqueue_admin_user_media( $hook ) {
 add_action( 'admin_enqueue_scripts', 'onstage_enqueue_admin_user_media' );
 
 /**
+ * Filter default WP avatar URL to return On Stage custom profile photo.
+ *
+ * @param string $url         Default avatar URL.
+ * @param mixed  $id_or_email User ID, email, or WP_User object.
+ * @return string Filtered avatar URL.
+ */
+function onstage_filter_avatar_url( $url, $id_or_email ) {
+	$user_id = 0;
+	if ( is_numeric( $id_or_email ) ) {
+		$user_id = (int) $id_or_email;
+	} elseif ( is_object( $id_or_email ) && ! empty( $id_or_email->user_id ) ) {
+		$user_id = (int) $id_or_email->user_id;
+	} elseif ( $id_or_email instanceof WP_User ) {
+		$user_id = $id_or_email->ID;
+	} elseif ( is_string( $id_or_email ) && is_email( $id_or_email ) ) {
+		$user = get_user_by( 'email', $id_or_email );
+		if ( $user ) {
+			$user_id = $user->ID;
+		}
+	}
+
+	if ( $user_id ) {
+		$custom_image = get_user_meta( $user_id, 'onstage_user_image', true );
+		if ( ! empty( $custom_image ) ) {
+			if ( is_numeric( $custom_image ) ) {
+				$img_url = wp_get_attachment_image_url( (int) $custom_image, 'medium' );
+				if ( $img_url ) {
+					return $img_url;
+				}
+			} elseif ( 0 === strpos( $custom_image, 'http://' ) || 0 === strpos( $custom_image, 'https://' ) || 0 === strpos( $custom_image, '/' ) ) {
+				return $custom_image;
+			} else {
+				return onstage_img( $custom_image );
+			}
+		}
+	}
+
+	return $url;
+}
+add_filter( 'get_avatar_url', 'onstage_filter_avatar_url', 10, 2 );
+
+/**
+ * Clean up default WP profile picture (Gravatar) and duplicate bio rows in WP Admin.
+ */
+function onstage_admin_user_profile_styles() {
+	$screen = get_current_screen();
+	if ( $screen && in_array( $screen->id, array( 'profile', 'user-edit' ), true ) ) {
+		echo '<style>
+			tr.user-profile-picture-wrap,
+			tr.user-description-wrap {
+				display: none !important;
+			}
+		</style>';
+	}
+}
+add_action( 'admin_head', 'onstage_admin_user_profile_styles' );
+
+/**
  * Add custom Profile Photo field & Media Uploader to WordPress User Profile edit page.
  *
  * @param WP_User|string $user User object or string context.
@@ -871,6 +929,7 @@ function onstage_user_profile_fields( $user ) {
 	$username  = ( $user instanceof WP_User ) ? $user->user_login : '';
 	$image     = $user_id ? get_user_meta( $user_id, 'onstage_user_image', true ) : '';
 	$show      = $user_id ? get_user_meta( $user_id, 'onstage_show_on_about', true ) : '1';
+	$bio       = $user_id ? get_the_author_meta( 'description', $user_id ) : '';
 	$image_url = $user_id ? onstage_get_user_avatar_url( $user_id ) : onstage_img( 'staff-linda.jpg' );
 
 	if ( '' === (string) $show ) {
@@ -931,6 +990,13 @@ function onstage_user_profile_fields( $user ) {
 				</script>
 			</td>
 		</tr>
+		<tr>
+			<th><label for="description"><?php esc_html_e( 'Biographical Info (Bio)', 'onstage' ); ?></label></th>
+			<td>
+				<textarea name="description" id="description" rows="5" cols="30" class="regular-text" style="width:100%; max-width:600px;"><?php echo esc_textarea( $bio ); ?></textarea>
+				<p class="description"><?php esc_html_e( 'Share a little biographical information about this staff member. This bio will be displayed on the About page.', 'onstage' ); ?></p>
+			</td>
+		</tr>
 	</table>
 	<?php
 }
@@ -964,6 +1030,10 @@ function onstage_save_user_profile_fields( $user_id ) {
 
 	if ( isset( $_POST['onstage_user_image'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		update_user_meta( $user_id, 'onstage_user_image', sanitize_text_field( wp_unslash( $_POST['onstage_user_image'] ) ) );
+	}
+
+	if ( isset( $_POST['description'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		update_user_meta( $user_id, 'description', sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) );
 	}
 }
 add_action( 'personal_options_update', 'onstage_save_user_profile_fields' );
