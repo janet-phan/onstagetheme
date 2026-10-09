@@ -1,6 +1,7 @@
 /**
  * On Stage Lightbox Gallery Script
- * Full-screen image lightbox modal with keyboard arrows (←/→), ESC to close, and touch swipe.
+ * Full-screen image lightbox modal with instant keyboard focus (←/→), mouse wheel/trackpad scroll,
+ * touch swipe, click to advance, and ESC to close.
  */
 document.addEventListener('DOMContentLoaded', function () {
 	// Create modal HTML structure once
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	modal.setAttribute('role', 'dialog');
 	modal.setAttribute('aria-modal', 'true');
 	modal.setAttribute('aria-label', 'Image Lightbox');
+	modal.setAttribute('tabindex', '-1');
 	modal.innerHTML = `
 		<div class="onstage-lightbox-overlay"></div>
 		<div class="onstage-lightbox-content">
@@ -38,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	var currentIndex = 0;
 	var touchStartX = 0;
 	var touchEndX = 0;
+	var wheelTimer = null;
 
 	function openLightbox(galleryImages, index) {
 		if (!galleryImages || !galleryImages.length) return;
@@ -45,11 +48,18 @@ document.addEventListener('DOMContentLoaded', function () {
 		currentIndex = index;
 		updateLightbox();
 		modal.classList.add('is-active');
+		document.documentElement.style.overflow = 'hidden';
 		document.body.style.overflow = 'hidden';
+
+		// Focus modal immediately so keyboard arrows work on the very first keypress
+		setTimeout(function () {
+			modal.focus();
+		}, 10);
 	}
 
 	function closeLightbox() {
 		modal.classList.remove('is-active');
+		document.documentElement.style.overflow = '';
 		document.body.style.overflow = '';
 		imgElement.src = '';
 	}
@@ -83,15 +93,54 @@ document.addEventListener('DOMContentLoaded', function () {
 		updateLightbox();
 	}
 
-	// Keyboard navigation & ESC close
-	document.addEventListener('keydown', function (e) {
+	// Keyboard navigation & ESC close (bound to window & document for immediate capture)
+	function handleKeyDown(e) {
 		if (!modal.classList.contains('is-active')) return;
-		if (e.key === 'Escape' || e.keyCode === 27) {
+		var key = e.key || e.code;
+		if (key === 'Escape' || e.keyCode === 27) {
+			e.preventDefault();
 			closeLightbox();
-		} else if (e.key === 'ArrowRight' || e.keyCode === 39) {
+		} else if (key === 'ArrowRight' || e.keyCode === 39) {
+			e.preventDefault();
 			showNext();
-		} else if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+		} else if (key === 'ArrowLeft' || e.keyCode === 37) {
+			e.preventDefault();
 			showPrev();
+		}
+	}
+
+	window.addEventListener('keydown', handleKeyDown, true);
+	document.addEventListener('keydown', handleKeyDown, true);
+
+	// Mouse wheel & Trackpad scroll navigation between gallery photos
+	modal.addEventListener('wheel', function (e) {
+		if (!modal.classList.contains('is-active')) return;
+		e.preventDefault();
+		if (wheelTimer) return;
+
+		if (e.deltaY > 10 || e.deltaX > 10) {
+			showNext();
+		} else if (e.deltaY < -10 || e.deltaX < -10) {
+			showPrev();
+		}
+
+		wheelTimer = setTimeout(function () {
+			wheelTimer = null;
+		}, 250);
+	}, { passive: false });
+
+	// Prevent background page touch scroll when modal is open
+	modal.addEventListener('touchmove', function (e) {
+		if (modal.classList.contains('is-active')) {
+			e.preventDefault();
+		}
+	}, { passive: false });
+
+	// Click image to advance to next photo
+	imgElement.addEventListener('click', function (e) {
+		e.stopPropagation();
+		if (currentGallery.length > 1) {
+			showNext();
 		}
 	});
 
@@ -176,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Standalone images (not inside a gallery block)
 		var standaloneImages = document.querySelectorAll('.wp-block-image img:not([data-lightbox-bound])');
 		standaloneImages.forEach(function (img) {
-			if (img.classList.contains('staff-img') || img.closest('.staff-img-col') || img.closest('.staff-member') || img.classList.contains('no-lightbox')) {
+			if (img.classList.contains('staff-img') || img.closest('.staff-img-col') || img.closest('.staff-member') || img.closest('.wp-block-gallery') || img.closest('.behind-scenes') || img.closest('.gallery-grid') || img.classList.contains('no-lightbox')) {
 				img.dataset.lightboxBound = 'true';
 				return;
 			}

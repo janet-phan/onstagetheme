@@ -162,43 +162,48 @@ function onstage_class_meta_box_html( $post ) {
 	$is_new     = (bool) get_post_meta( $post->ID, 'onstage_class_is_new', true );
 	?>
 	<p>
-		<label for="onstage_class_weekday"><strong><?php esc_html_e( 'Weekday', 'onstage' ); ?></strong></label><br />
-		<select id="onstage_class_weekday" name="onstage_class_weekday" class="widefat">
+		<label for="onstage_class_weekday"><strong><?php esc_html_e( 'Day of the Week', 'onstage' ); ?></strong></label><br />
+		<select id="onstage_class_weekday" name="onstage_class_weekday" class="widefat" style="margin-top:4px;">
 			<?php foreach ( onstage_class_weekdays() as $key => $day ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $weekday, $key ); ?>><?php echo esc_html( $day['label'] ); ?></option>
 			<?php endforeach; ?>
 		</select>
+		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Which day column this class appears under.', 'onstage' ); ?></span>
 	</p>
 	<p>
-		<label for="onstage_class_time"><strong><?php esc_html_e( 'Time', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." />
+		<label for="onstage_class_time"><strong><?php esc_html_e( 'Class Time', 'onstage' ); ?></strong></label><br />
+		<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." style="margin-top:4px;" />
+		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Time range (e.g. 3:30–4:30 p.m.).', 'onstage' ); ?></span>
 	</p>
 	<p>
-		<label for="onstage_class_ages"><strong><?php esc_html_e( 'Ages / note', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_ages" name="onstage_class_ages" class="widefat" value="<?php echo esc_attr( $ages ); ?>" />
+		<label for="onstage_class_ages"><strong><?php esc_html_e( 'Age Group / Level Note', 'onstage' ); ?></strong></label><br />
+		<input type="text" id="onstage_class_ages" name="onstage_class_ages" class="widefat" value="<?php echo esc_attr( $ages ); ?>" placeholder="Ages 4–6 or Teen/Adult" style="margin-top:4px;" />
+		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Student age range or level note.', 'onstage' ); ?></span>
 	</p>
 	<p>
-		<label for="onstage_class_instructor"><strong><?php esc_html_e( 'Instructor', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_instructor" name="onstage_class_instructor" class="widefat" value="<?php echo esc_attr( $instructor ); ?>" />
+		<label for="onstage_class_instructor"><strong><?php esc_html_e( 'Instructor Name(s)', 'onstage' ); ?></strong></label><br />
+		<input type="text" id="onstage_class_instructor" name="onstage_class_instructor" class="widefat" value="<?php echo esc_attr( $instructor ); ?>" placeholder="Miss Linda / Miss Sarah" style="margin-top:4px;" />
+		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Name of teacher(s) for this class.', 'onstage' ); ?></span>
 	</p>
 	<p>
-		<label for="onstage_class_category"><strong><?php esc_html_e( 'Category color', 'onstage' ); ?></strong></label><br />
-		<select id="onstage_class_category" name="onstage_class_category" class="widefat">
-			<option value="company" <?php selected( $category, 'company' ); ?>><?php esc_html_e( 'Company Teams', 'onstage' ); ?></option>
-			<option value="theater" <?php selected( $category, 'theater' ); ?>><?php esc_html_e( 'Musical Theater', 'onstage' ); ?></option>
-			<option value="combo" <?php selected( $category, 'combo' ); ?>><?php esc_html_e( 'Little Ones / Combo', 'onstage' ); ?></option>
-			<option value="teen" <?php selected( $category, 'teen' ); ?>><?php esc_html_e( 'Teen & Adult', 'onstage' ); ?></option>
-			<option value="rehearsal" <?php selected( $category, 'rehearsal' ); ?>><?php esc_html_e( 'Rehearsals & Shows', 'onstage' ); ?></option>
-			<option value="hiphop" <?php selected( $category, 'hiphop' ); ?>><?php esc_html_e( 'Hip Hop', 'onstage' ); ?></option>
+		<label for="onstage_class_category"><strong><?php esc_html_e( 'Category & Card Color Style', 'onstage' ); ?></strong></label><br />
+		<select id="onstage_class_category" name="onstage_class_category" class="widefat" style="margin-top:4px;">
+			<option value="company" <?php selected( $category, 'company' ); ?>><?php esc_html_e( 'Company Teams (Blue)', 'onstage' ); ?></option>
+			<option value="theater" <?php selected( $category, 'theater' ); ?>><?php esc_html_e( 'Musical Theater (Pink)', 'onstage' ); ?></option>
+			<option value="combo" <?php selected( $category, 'combo' ); ?>><?php esc_html_e( 'Little Ones / Combo (Green)', 'onstage' ); ?></option>
+			<option value="teen" <?php selected( $category, 'teen' ); ?>><?php esc_html_e( 'Teen & Adult (Purple)', 'onstage' ); ?></option>
+			<option value="rehearsal" <?php selected( $category, 'rehearsal' ); ?>><?php esc_html_e( 'Rehearsals & Shows (Orange)', 'onstage' ); ?></option>
+			<option value="hiphop" <?php selected( $category, 'hiphop' ); ?>><?php esc_html_e( 'Hip Hop (Teal)', 'onstage' ); ?></option>
 		</select>
 	</p>
-	<p>
-		<label>
+	<p style="background:#fef3c7; border:1px solid #fde047; padding:10px; border-radius:4px; margin-top:12px;">
+		<label style="font-weight:600; color:#854d0e;">
 			<input type="checkbox" name="onstage_class_is_new" value="1" <?php checked( $is_new ); ?> />
-			<?php esc_html_e( 'Show NEW badge', 'onstage' ); ?>
+			<?php esc_html_e( '☑ Highlight as NEW Class (Displays "NEW" badge)', 'onstage' ); ?>
 		</label>
+		<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#a16207;"><?php esc_html_e( 'Check this box to highlight this class with a bright NEW badge on the website schedule.', 'onstage' ); ?></span>
 	</p>
-	<p class="description"><?php esc_html_e( 'Menu order controls sort within a day (lower = earlier). The Programs page grid updates automatically.', 'onstage' ); ?></p>
+	<p class="description" style="margin-top:12px; font-size:12px; color:#64748b;"><?php esc_html_e( '💡 Order on Schedule: Set "Order" under Page Attributes (lower numbers appear earlier in the day).', 'onstage' ); ?></p>
 	<?php
 }
 

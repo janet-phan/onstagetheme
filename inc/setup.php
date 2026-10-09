@@ -31,6 +31,7 @@ function onstage_maybe_seed() {
 			onstage_publish_scheduled_shows();
 			onstage_seed_classes();
 			onstage_seed_staff_users();
+			onstage_seed_galleries();
 			$ids = onstage_seed_pages();
 			onstage_seed_menu( $ids );
 			onstage_configure_reading( $ids );
@@ -71,6 +72,7 @@ function onstage_maybe_refresh_seeded_content() {
 		onstage_seed_logo( true );
 		onstage_seed_classes();
 		onstage_seed_staff_users();
+		onstage_seed_galleries();
 		onstage_write_seeded_pages();
 		onstage_publish_scheduled_shows();
 
@@ -735,5 +737,94 @@ function onstage_seed_staff_users() {
 	$devgirl = get_user_by( 'login', 'devgirl' );
 	if ( $devgirl && '' === (string) get_user_meta( $devgirl->ID, 'onstage_show_on_about', true ) ) {
 		update_user_meta( $devgirl->ID, 'onstage_show_on_about', '0' );
+	}
+}
+
+/**
+ * Seed initial Gallery CPT posts for photo galleries and costume rentals.
+ */
+function onstage_seed_galleries() {
+	$counts = wp_count_posts( 'gallery' );
+	if ( $counts && (int) $counts->publish > 0 ) {
+		return;
+	}
+
+	$galleries = array(
+		array(
+			'title' => 'Dare to Dream',
+			'slug'  => 'dare-to-dream-gallery-cpt',
+			'link'  => '/dare-to-dream-gallery/',
+			'type'  => 'photo',
+			'image' => 'gallery-dare-to-dream.jpg',
+			'order' => 1,
+		),
+		array(
+			'title' => 'Peter Pan',
+			'slug'  => 'peter-pan-gallery-cpt',
+			'link'  => '/peter-pan-gallery/',
+			'type'  => 'photo',
+			'image' => 'gallery-peter-pan.jpg',
+			'order' => 2,
+		),
+		array(
+			'title' => 'A Christmas Carol',
+			'slug'  => 'christmas-carol-gallery-cpt',
+			'link'  => '/christmas-carol-gallery/',
+			'type'  => 'photo',
+			'image' => 'gallery-christmas-carol.jpg',
+			'order' => 3,
+		),
+		array(
+			'title' => 'Oliver!',
+			'slug'  => 'oliver-gallery-cpt',
+			'link'  => '/oliver-gallery/',
+			'type'  => 'photo',
+			'image' => 'gallery-oliver.jpg',
+			'order' => 4,
+		),
+		array(
+			'title' => 'A Christmas Carol Costumes',
+			'slug'  => 'christmas-carol-costumes-cpt',
+			'link'  => '/christmas-carol-costumes/',
+			'type'  => 'costume',
+			'image' => 'costumes-carol.jpg',
+			'order' => 1,
+		),
+		array(
+			'title' => 'Oliver! Costumes',
+			'slug'  => 'oliver-costumes-cpt',
+			'link'  => '/oliver-costumes/',
+			'type'  => 'costume',
+			'image' => 'costumes-oliver.jpg',
+			'order' => 2,
+		),
+		array(
+			'title' => 'Peter Pan Costumes',
+			'slug'  => 'peter-pan-costumes-cpt',
+			'link'  => '/peter-pan-costumes/',
+			'type'  => 'costume',
+			'image' => 'costumes-peter-pan.jpg',
+			'order' => 3,
+		),
+	);
+
+	foreach ( $galleries as $item ) {
+		$id = wp_insert_post(
+			array(
+				'post_type'   => 'gallery',
+				'post_status' => 'publish',
+				'post_title'  => $item['title'],
+				'post_name'   => $item['slug'],
+				'menu_order'  => $item['order'],
+			)
+		);
+		if ( ! is_wp_error( $id ) && $id ) {
+			update_post_meta( $id, 'onstage_gallery_type', $item['type'] );
+			update_post_meta( $id, 'onstage_gallery_link', $item['link'] );
+			$image_id = onstage_sideload_theme_image( $item['image'], $item['title'] . ' cover' );
+			if ( $image_id ) {
+				set_post_thumbnail( $id, $image_id );
+			}
+		}
 	}
 }

@@ -71,25 +71,9 @@ $carol    = onstage_img( 'costume-christmas-carol.jpg' );
 	<!-- wp:paragraph {"align":"center","className":"white-text"} -->
 	<p class="has-text-align-center white-text">Select a production to view examples from its costume collection.</p>
 	<!-- /wp:paragraph -->
-	<!-- wp:html -->
-	<div class="costume-categories-grid">
-		<a class="category-card costume-gallery-trigger" href="/oliver-costumes/">
-			<div class="category-title">OLIVER</div>
-			<img src="<?php echo $oliver; ?>" alt="Oliver costume collection"/>
-			<div class="costume-gallery-label"><i class="fa-solid fa-images" aria-hidden="true"></i> VIEW COLLECTION</div>
-		</a>
-		<a class="category-card costume-gallery-trigger" href="/peter-pan-costumes/">
-			<div class="category-title">PETER PAN</div>
-			<img src="<?php echo $peter; ?>" alt="Peter Pan costume collection"/>
-			<div class="costume-gallery-label"><i class="fa-solid fa-images" aria-hidden="true"></i> VIEW COLLECTION</div>
-		</a>
-		<a class="category-card costume-gallery-trigger" href="/christmas-carol-costumes/">
-			<div class="category-title">A CHRISTMAS CAROL</div>
-			<img src="<?php echo $carol; ?>" alt="A Christmas Carol costume collection"/>
-			<div class="costume-gallery-label"><i class="fa-solid fa-images" aria-hidden="true"></i> VIEW COLLECTION</div>
-		</a>
-	</div>
-	<!-- /wp:html -->
+	<!-- wp:shortcode -->
+	[onstage_gallery_grid type="costume"]
+	<!-- /wp:shortcode -->
 	<!-- wp:group {"className":"other-costume-shows"} -->
 	<div class="wp-block-group other-costume-shows">
 		<!-- wp:heading {"textAlign":"center","level":3} -->

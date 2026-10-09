@@ -1715,4 +1715,128 @@ figure.staff-img img,
 	pointer-events: none !important;
 }
 
+/* --- Show Photo & Costume Gallery Card Grid (Netlify Mockup Match) --- */
+.show-gallery-grid.wp-block-columns,
+.wp-block-columns.gallery-grid-new.show-gallery-grid {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	gap: 24px !important;
+	margin-top: 32px !important;
+	margin-bottom: 40px !important;
+	align-items: stretch !important;
+}
+
+@media (max-width: 992px) {
+	.show-gallery-grid.wp-block-columns,
+	.wp-block-columns.gallery-grid-new.show-gallery-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 600px) {
+	.show-gallery-grid.wp-block-columns,
+	.wp-block-columns.gallery-grid-new.show-gallery-grid {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+.gallery-item-new {
+	margin: 0 !important;
+	width: 100% !important;
+}
+
+.show-gallery-card-wrapper {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.show-gallery-card-link {
+	display: block !important;
+	text-decoration: none !important;
+	color: inherit !important;
+	height: 100% !important;
+	border-radius: 14px !important;
+	outline: none !important;
+}
+
+.show-gallery-card {
+	position: relative !important;
+	display: flex !important;
+	flex-direction: column !important;
+	justify-content: flex-end !important;
+	align-items: center !important;
+	min-height: 270px !important;
+	height: 270px !important;
+	border-radius: 14px !important;
+	overflow: hidden !important;
+	background-color: #1a1a1a !important;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12) !important;
+	transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.show-gallery-card-link:hover .show-gallery-card,
+.show-gallery-card-link:focus .show-gallery-card {
+	transform: translateY(-5px) !important;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+.show-gallery-card-img {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+	z-index: 1 !important;
+	transition: transform 0.5s ease !important;
+}
+
+.show-gallery-card-link:hover .show-gallery-card-img,
+.show-gallery-card-link:focus .show-gallery-card-img {
+	transform: scale(1.06) !important;
+}
+
+/* Gradient overlay: Keeps the top 60% of image completely clear and bright, darkens bottom for white text */
+.show-gallery-card-gradient {
+	position: absolute !important;
+	inset: 0 !important;
+	z-index: 2 !important;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0) 80%) !important;
+	pointer-events: none !important;
+}
+
+.show-gallery-card-content {
+	position: relative !important;
+	z-index: 3 !important;
+	text-align: center !important;
+	padding: 20px 16px !important;
+	width: 100% !important;
+}
+
+.show-gallery-card-title {
+	color: #ffffff !important;
+	font-size: 1.35rem !important;
+	font-weight: 800 !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.03em !important;
+	margin: 0 0 6px 0 !important;
+	line-height: 1.2 !important;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+.show-gallery-card-subtext {
+	display: inline-block !important;
+	color: #E95BAF !important;
+	font-size: 0.88rem !important;
+	font-weight: 800 !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.08em !important;
+	transition: color 0.2s ease !important;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.show-gallery-card-link:hover .show-gallery-card-subtext {
+	color: #ff7ad1 !important;
+}
+
+
 

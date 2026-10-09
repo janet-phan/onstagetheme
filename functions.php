@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.24' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.24' );
+define( 'ONSTAGE_VERSION', '1.0.25' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.25' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -22,6 +22,8 @@ define( 'ONSTAGE_EMAIL', 'LindaOnStage@AOL.com' );
 
 require get_template_directory() . '/inc/cpt-show.php';
 require get_template_directory() . '/inc/cpt-class.php';
+require get_template_directory() . '/inc/cpt-gallery.php';
+require get_template_directory() . '/inc/client-dashboard.php';
 require get_template_directory() . '/inc/inner-pages.php';
 require get_template_directory() . '/inc/setup.php';
 
@@ -904,17 +906,42 @@ function onstage_filter_avatar_url( $url, $id_or_email ) {
 add_filter( 'get_avatar_url', 'onstage_filter_avatar_url', 10, 2 );
 
 /**
- * Clean up default WP profile picture (Gravatar) and duplicate bio rows in WP Admin.
+ * Clean up default WP profile picture (Gravatar), Application Passwords, "About Yourself" heading, and role selector.
  */
 function onstage_admin_user_profile_styles() {
 	$screen = get_current_screen();
 	if ( $screen && in_array( $screen->id, array( 'profile', 'user-edit' ), true ) ) {
+		$hide_extra  = ! onstage_is_super_admin();
+		$can_promote = current_user_can( 'promote_users' );
 		echo '<style>
 			tr.user-profile-picture-wrap,
 			tr.user-description-wrap {
 				display: none !important;
 			}
-		</style>';
+			' . ( ! $can_promote ? 'tr.user-role-wrap { display: none !important; }' : '' ) . '
+			' . ( $hide_extra ? '
+			tr.user-rich-editing-wrap,
+			tr.user-syntax-highlighting-wrap,
+			tr.user-admin-color-wrap,
+			tr.user-comment-shortcuts-wrap,
+			tr.show-admin-bar-wrap,
+			tr.user-language-wrap,
+			tr.user-url-wrap,
+			.application-passwords,
+			#application-passwords-section,
+			.user-application-passwords-wrap {
+				display: none !important;
+			}
+			' : '' ) . '
+		</style>
+		<script>
+		jQuery(document).ready(function($) {
+			$("h2").filter(function() {
+				var txt = $(this).text().trim().toLowerCase();
+				return txt.indexOf("about yourself") !== -1 || txt.indexOf("about the user") !== -1;
+			}).hide();
+		});
+		</script>';
 	}
 }
 add_action( 'admin_head', 'onstage_admin_user_profile_styles' );

@@ -25,66 +25,9 @@ $youtube   = 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg';
 	<!-- wp:heading {"textAlign":"center","className":"pink-text"} -->
 	<h2 class="wp-block-heading has-text-align-center pink-text">PREVIOUS SHOW GALLERIES</h2>
 	<!-- /wp:heading -->
-	<!-- wp:columns {"className":"gallery-grid-new show-gallery-grid"} -->
-	<div class="wp-block-columns gallery-grid-new show-gallery-grid">
-		<!-- wp:column {"className":"gallery-item-new"} -->
-		<div class="wp-block-column gallery-item-new">
-			<!-- wp:cover {"url":"<?php echo $dare; ?>","alt":"Dare to Dream","dimRatio":50,"overlayColor":"dark","isUserOverlayColor":true,"minHeight":280,"minHeightUnit":"px","className":"show-gallery-card"} -->
-			<div class="wp-block-cover show-gallery-card" style="min-height:280px"><span aria-hidden="true" class="wp-block-cover__background has-dark-background-color has-background-dim"></span><img class="wp-block-cover__image-background" alt="Dare to Dream" src="<?php echo $dare; ?>" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-				<!-- wp:heading {"textAlign":"center","level":3} -->
-				<h3 class="wp-block-heading has-text-align-center">DARE TO DREAM</h3>
-				<!-- /wp:heading -->
-				<!-- wp:paragraph {"align":"center","className":"view-gallery-link"} -->
-				<p class="has-text-align-center view-gallery-link"><a href="/dare-to-dream-gallery/">VIEW GALLERY</a></p>
-				<!-- /wp:paragraph -->
-			</div></div>
-			<!-- /wp:cover -->
-		</div>
-		<!-- /wp:column -->
-		<!-- wp:column {"className":"gallery-item-new"} -->
-		<div class="wp-block-column gallery-item-new">
-			<!-- wp:cover {"url":"<?php echo $peter; ?>","alt":"Peter Pan","dimRatio":50,"overlayColor":"dark","isUserOverlayColor":true,"minHeight":280,"minHeightUnit":"px","className":"show-gallery-card"} -->
-			<div class="wp-block-cover show-gallery-card" style="min-height:280px"><span aria-hidden="true" class="wp-block-cover__background has-dark-background-color has-background-dim"></span><img class="wp-block-cover__image-background" alt="Peter Pan" src="<?php echo $peter; ?>" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-				<!-- wp:heading {"textAlign":"center","level":3} -->
-				<h3 class="wp-block-heading has-text-align-center">PETER PAN</h3>
-				<!-- /wp:heading -->
-				<!-- wp:paragraph {"align":"center","className":"view-gallery-link"} -->
-				<p class="has-text-align-center view-gallery-link"><a href="/peter-pan-gallery/">VIEW GALLERY</a></p>
-				<!-- /wp:paragraph -->
-			</div></div>
-			<!-- /wp:cover -->
-		</div>
-		<!-- /wp:column -->
-		<!-- wp:column {"className":"gallery-item-new"} -->
-		<div class="wp-block-column gallery-item-new">
-			<!-- wp:cover {"url":"<?php echo $carol; ?>","alt":"A Christmas Carol","dimRatio":50,"overlayColor":"dark","isUserOverlayColor":true,"minHeight":280,"minHeightUnit":"px","className":"show-gallery-card"} -->
-			<div class="wp-block-cover show-gallery-card" style="min-height:280px"><span aria-hidden="true" class="wp-block-cover__background has-dark-background-color has-background-dim"></span><img class="wp-block-cover__image-background" alt="A Christmas Carol" src="<?php echo $carol; ?>" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-				<!-- wp:heading {"textAlign":"center","level":3} -->
-				<h3 class="wp-block-heading has-text-align-center">A CHRISTMAS CAROL</h3>
-				<!-- /wp:heading -->
-				<!-- wp:paragraph {"align":"center","className":"view-gallery-link"} -->
-				<p class="has-text-align-center view-gallery-link"><a href="/christmas-carol-gallery/">VIEW GALLERY</a></p>
-				<!-- /wp:paragraph -->
-			</div></div>
-			<!-- /wp:cover -->
-		</div>
-		<!-- /wp:column -->
-		<!-- wp:column {"className":"gallery-item-new"} -->
-		<div class="wp-block-column gallery-item-new">
-			<!-- wp:cover {"url":"<?php echo $oliver; ?>","alt":"Oliver!","dimRatio":50,"overlayColor":"dark","isUserOverlayColor":true,"minHeight":280,"minHeightUnit":"px","className":"show-gallery-card"} -->
-			<div class="wp-block-cover show-gallery-card" style="min-height:280px"><span aria-hidden="true" class="wp-block-cover__background has-dark-background-color has-background-dim"></span><img class="wp-block-cover__image-background" alt="Oliver!" src="<?php echo $oliver; ?>" data-object-fit="cover"/><div class="wp-block-cover__inner-container">
-				<!-- wp:heading {"textAlign":"center","level":3} -->
-				<h3 class="wp-block-heading has-text-align-center">OLIVER!</h3>
-				<!-- /wp:heading -->
-				<!-- wp:paragraph {"align":"center","className":"view-gallery-link"} -->
-				<p class="has-text-align-center view-gallery-link"><a href="/oliver-gallery/">VIEW GALLERY</a></p>
-				<!-- /wp:paragraph -->
-			</div></div>
-			<!-- /wp:cover -->
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
+	<!-- wp:shortcode -->
+	[onstage_gallery_grid type="photo"]
+	<!-- /wp:shortcode -->
 </div>
 <!-- /wp:group -->
 
