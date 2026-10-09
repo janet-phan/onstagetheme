@@ -288,3 +288,25 @@ function onstage_clean_admin_menu_for_clients() {
 	}
 }
 add_action( 'admin_menu', 'onstage_clean_admin_menu_for_clients', 999 );
+
+/**
+ * Lock down Block Editor layout editing for non-Admin editors (like Lisa).
+ * Allows editing text, headings, photos, and buttons while preserving page structure/layout.
+ *
+ * @param array                   $settings Editor settings.
+ * @param WP_Block_Editor_Context $context  Editor context.
+ * @return array Modified settings.
+ */
+function onstage_lock_editor_layout_for_editors( $settings, $context ) {
+	if ( ! current_user_can( 'administrator' ) ) {
+		// Disable Code/HTML editor view to prevent messing up layout block structure
+		$settings['codeEditingEnabled'] = false;
+
+		// Disable block locking controls so non-admins cannot unlock locked containers
+		$settings['canLockBlocks'] = false;
+	}
+
+	return $settings;
+}
+add_filter( 'block_editor_settings_all', 'onstage_lock_editor_layout_for_editors', 10, 2 );
+
