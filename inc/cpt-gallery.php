@@ -39,12 +39,12 @@ function onstage_register_gallery_cpt() {
 			'publicly_queryable'  => true,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
-			'show_in_rest'        => true,
+			'show_in_rest'        => false,
 			'has_archive'         => false,
 			'exclude_from_search' => false,
 			'menu_icon'           => 'dashicons-format-gallery',
 			'menu_position'       => 7,
-			'supports'            => array( 'title', 'editor', 'thumbnail', 'page-attributes' ),
+			'supports'            => array( 'title', 'thumbnail', 'page-attributes' ),
 			'rewrite'             => array( 'slug' => 'gallery-item' ),
 		)
 	);
@@ -603,7 +603,7 @@ function onstage_get_gallery_link( $post_id ) {
 		$slug       = $post->post_name;
 		$clean_slug = str_replace( '-cpt', '', $slug );
 
-		// Check if a dedicated page exists with slug like 'dare-to-dream-gallery'
+		// Check if a dedicated page exists with exact clean slug
 		$page = get_page_by_path( $clean_slug );
 		if ( $page ) {
 			return get_permalink( $page->ID );
@@ -611,6 +611,13 @@ function onstage_get_gallery_link( $post_id ) {
 
 		if ( false === strpos( $clean_slug, 'gallery' ) ) {
 			$page = get_page_by_path( $clean_slug . '-gallery' );
+			if ( $page ) {
+				return get_permalink( $page->ID );
+			}
+		}
+
+		if ( false === strpos( $clean_slug, 'costumes' ) ) {
+			$page = get_page_by_path( $clean_slug . '-costumes' );
 			if ( $page ) {
 				return get_permalink( $page->ID );
 			}
@@ -790,28 +797,72 @@ function onstage_single_gallery_content( $content ) {
 add_filter( 'the_content', 'onstage_single_gallery_content' );
 
 /**
- * Add Submenu: Drag & Drop Reorder Galleries.
+ * Add Submenus: Drag & Drop Reorder Photo & Costume Galleries.
  */
 function onstage_register_gallery_reorder_page() {
 	add_submenu_page(
 		'edit.php?post_type=gallery',
-		__( 'Reorder Albums', 'onstage' ),
-		__( 'Reorder Albums', 'onstage' ),
+		__( 'Reorder Photo Galleries', 'onstage' ),
+		__( '↕ Reorder Photo Galleries', 'onstage' ),
 		'edit_posts',
 		'onstage-reorder-galleries',
 		'onstage_render_gallery_reorder_page'
+	);
+	add_submenu_page(
+		'edit.php?post_type=gallery',
+		__( 'Reorder Costume Galleries', 'onstage' ),
+		__( '↕ Reorder Costume Galleries', 'onstage' ),
+		'edit_posts',
+		'onstage-reorder-costumes',
+		'onstage_render_costume_reorder_page'
 	);
 }
 add_action( 'admin_menu', 'onstage_register_gallery_reorder_page' );
 
 /**
- * Render Drag-and-Drop Reorder Galleries admin page.
+ * Render Costume Galleries reorder entry point.
  */
-function onstage_render_gallery_reorder_page() {
+function onstage_render_costume_reorder_page() {
+	onstage_render_gallery_reorder_page( 'costume' );
+}
+
+/**
+ * Render Drag-and-Drop Reorder Galleries admin page with tabs.
+ *
+ * @param string $initial_tab Initial tab ('photo' or 'costume').
+ */
+function onstage_render_gallery_reorder_page( $initial_tab = 'photo' ) {
+	$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : $initial_tab;
+	if ( ! in_array( $tab, array( 'photo', 'costume' ), true ) ) {
+		$tab = 'photo';
+	}
+
+	$meta_query = ( 'costume' === $tab )
+		? array(
+			array(
+				'key'     => 'onstage_gallery_type',
+				'value'   => 'costume',
+				'compare' => '=',
+			),
+		)
+		: array(
+			'relation' => 'OR',
+			array(
+				'key'     => 'onstage_gallery_type',
+				'value'   => 'photo',
+				'compare' => '=',
+			),
+			array(
+				'key'     => 'onstage_gallery_type',
+				'compare' => 'NOT EXISTS',
+			),
+		);
+
 	$galleries = get_posts( array(
 		'post_type'      => 'gallery',
 		'post_status'    => array( 'publish', 'draft' ),
 		'posts_per_page' => -1,
+		'meta_query'     => $meta_query,
 		'orderby'        => array(
 			'menu_order' => 'ASC',
 			'title'      => 'ASC',
@@ -822,36 +873,62 @@ function onstage_render_gallery_reorder_page() {
 		<h1 style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
 			<span>🖼️</span> <?php esc_html_e( 'Reorder Photo & Costume Galleries', 'onstage' ); ?>
 		</h1>
+
+		<!-- Navigation Tabs -->
+		<h2 class="nav-tab-wrapper" style="margin-bottom:20px;">
+			<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-galleries&tab=photo' ) ); ?>" class="nav-tab <?php echo 'photo' === $tab ? 'nav-tab-active' : ''; ?>" style="font-weight:600;">
+				📸 <?php esc_html_e( 'Show Photo Galleries (for /gallery/)', 'onstage' ); ?>
+			</a>
+			<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-costumes&tab=costume' ) ); ?>" class="nav-tab <?php echo 'costume' === $tab ? 'nav-tab-active' : ''; ?>" style="font-weight:600;">
+				👗 <?php esc_html_e( 'Costume Rental Collections (for /costume-rentals/)', 'onstage' ); ?>
+			</a>
+		</h2>
+
 		<p class="description" style="font-size:14px; color:#475569; margin-bottom:20px;">
-			<?php esc_html_e( 'Drag and drop albums to change the card display order on the Photo Gallery and Costume Rental pages. Changes are saved automatically.', 'onstage' ); ?>
+			<?php if ( 'costume' === $tab ) : ?>
+				<?php esc_html_e( 'Drag and drop costume collections to change the display order on the /costume-rentals/ page. Changes are saved automatically.', 'onstage' ); ?>
+			<?php else : ?>
+				<?php esc_html_e( 'Drag and drop show photo albums to change the display order on the /gallery/ page. Changes are saved automatically.', 'onstage' ); ?>
+			<?php endif; ?>
 		</p>
 
 		<div id="onstage_gallery_reorder_status" style="display:none; padding:12px 16px; border-radius:6px; margin-bottom:15px; font-weight:600;"></div>
 
-		<div id="onstage_gallery_sortable_list" style="display:flex; flex-direction:column; gap:10px;">
-			<?php foreach ( $galleries as $index => $g ) :
-				$cover = onstage_get_gallery_cover_url( $g->ID );
-				$type  = get_post_meta( $g->ID, 'onstage_gallery_type', true );
-				$type_label = ( 'costume' === $type ) ? __( 'Costume Gallery', 'onstage' ) : __( 'Photo Gallery', 'onstage' );
-				$type_bg    = ( 'costume' === $type ) ? '#fce7f3' : '#e0f2fe';
-				$type_color = ( 'costume' === $type ) ? '#be185d' : '#0369a1';
-				?>
-				<div class="onstage-gallery-sort-item" data-id="<?php echo esc_attr( $g->ID ); ?>" style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px 18px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 4px rgba(0,0,0,0.04); cursor:grab; user-select:none;">
-					<span class="dashicons dashicons-menu" style="color:#94a3b8; font-size:20px; cursor:grab;"></span>
-					<span class="onstage-gallery-badge" style="background:#6A3FC7; color:#fff; font-weight:700; font-size:12px; padding:3px 8px; border-radius:12px; min-width:32px; text-align:center;">
-						#<?php echo esc_html( $index + 1 ); ?>
-					</span>
-					<img src="<?php echo esc_url( $cover ); ?>" alt="" style="width:55px; height:55px; border-radius:6px; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0;" />
-					<div style="flex:1;">
-						<strong style="font-size:15px; color:#0f172a; display:block;"><?php echo esc_html( $g->post_title ); ?></strong>
-						<span style="display:inline-block; margin-top:3px; background:<?php echo esc_attr( $type_bg ); ?>; color:<?php echo esc_attr( $type_color ); ?>; font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px;">
-							<?php echo esc_html( $type_label ); ?>
+		<?php if ( empty( $galleries ) ) : ?>
+			<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:30px; text-align:center; color:#64748b;">
+				<p style="margin:0 0 10px 0; font-size:15px;">
+					<?php printf( esc_html__( 'No %s found yet.', 'onstage' ), 'costume' === $tab ? esc_html__( 'costume collections', 'onstage' ) : esc_html__( 'photo galleries', 'onstage' ) ); ?>
+				</p>
+				<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=gallery' ) ); ?>" class="button button-primary">
+					<?php esc_html_e( '+ Add New Album', 'onstage' ); ?>
+				</a>
+			</div>
+		<?php else : ?>
+			<div id="onstage_gallery_sortable_list" style="display:flex; flex-direction:column; gap:10px;">
+				<?php foreach ( $galleries as $index => $g ) :
+					$cover = onstage_get_gallery_cover_url( $g->ID );
+					$type  = get_post_meta( $g->ID, 'onstage_gallery_type', true );
+					$type_label = ( 'costume' === $type ) ? __( 'Costume Collection', 'onstage' ) : __( 'Photo Gallery', 'onstage' );
+					$type_bg    = ( 'costume' === $type ) ? '#fce7f3' : '#e0f2fe';
+					$type_color = ( 'costume' === $type ) ? '#be185d' : '#0369a1';
+					?>
+					<div class="onstage-gallery-sort-item" data-id="<?php echo esc_attr( $g->ID ); ?>" style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px 18px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 4px rgba(0,0,0,0.04); cursor:grab; user-select:none;">
+						<span class="dashicons dashicons-menu" style="color:#94a3b8; font-size:20px; cursor:grab;"></span>
+						<span class="onstage-gallery-badge" style="background:#6A3FC7; color:#fff; font-weight:700; font-size:12px; padding:3px 8px; border-radius:12px; min-width:32px; text-align:center;">
+							#<?php echo esc_html( $index + 1 ); ?>
 						</span>
+						<img src="<?php echo esc_url( $cover ); ?>" alt="" style="width:55px; height:55px; border-radius:6px; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0;" />
+						<div style="flex:1;">
+							<strong style="font-size:15px; color:#0f172a; display:block;"><?php echo esc_html( $g->post_title ); ?></strong>
+							<span style="display:inline-block; margin-top:3px; background:<?php echo esc_attr( $type_bg ); ?>; color:<?php echo esc_attr( $type_color ); ?>; font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px;">
+								<?php echo esc_html( $type_label ); ?>
+							</span>
+						</div>
+						<a href="<?php echo esc_url( get_edit_post_link( $g->ID ) ); ?>" class="button button-small" style="text-decoration:none;"><?php esc_html_e( 'Edit Photos', 'onstage' ); ?></a>
 					</div>
-					<a href="<?php echo esc_url( get_edit_post_link( $g->ID ) ); ?>" class="button button-small" style="text-decoration:none;"><?php esc_html_e( 'Edit Photos', 'onstage' ); ?></a>
-				</div>
-			<?php endforeach; ?>
-		</div>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 	</div>
 
 	<script>

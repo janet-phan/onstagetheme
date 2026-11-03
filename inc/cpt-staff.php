@@ -39,7 +39,7 @@ function onstage_register_staff_cpt() {
 			'public'              => false,
 			'show_ui'             => true,
 			'show_in_menu'        => true,
-			'show_in_rest'        => true,
+			'show_in_rest'        => false,
 			'has_archive'         => false,
 			'publicly_queryable'  => false,
 			'exclude_from_search' => true,

@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			'.past-productions-gallery',
 			'.past-productions-grid',
 			'.destination-gallery-grid',
-			'.show-gallery-grid',
+			'.single-gallery-photos-grid',
 			'.behind-scenes'
 		];
 
@@ -191,6 +191,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			var galleryItems = [];
 			imgNodes.forEach(function (img) {
+				// Skip navigation cards (like cards on /gallery/ and /costume-rentals/)
+				if (img.closest('.show-gallery-card-link') || img.closest('.show-gallery-card') || img.closest('.show-gallery-card-wrapper') || img.closest('.show-gallery-grid') || img.closest('.gallery-grid-new') || img.classList.contains('no-lightbox')) {
+					return;
+				}
+
 				var src = img.currentSrc || img.src;
 				var parentAnchor = img.closest('a');
 				if (parentAnchor && /\.(jpg|jpeg|png|gif|webp)$/i.test(parentAnchor.href)) {
@@ -207,8 +212,16 @@ document.addEventListener('DOMContentLoaded', function () {
 				});
 			});
 
+			if (!galleryItems.length) return;
+
 			imgNodes.forEach(function (img, idx) {
 				if (img.dataset.lightboxBound) return;
+				// Skip navigation cards
+				if (img.closest('.show-gallery-card-link') || img.closest('.show-gallery-card') || img.closest('.show-gallery-card-wrapper') || img.closest('.show-gallery-grid') || img.closest('.gallery-grid-new') || img.classList.contains('no-lightbox')) {
+					img.dataset.lightboxBound = 'true';
+					return;
+				}
+
 				img.dataset.lightboxBound = 'true';
 				img.style.cursor = 'pointer';
 
@@ -225,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Standalone images (not inside a gallery block)
 		var standaloneImages = document.querySelectorAll('.wp-block-image img:not([data-lightbox-bound])');
 		standaloneImages.forEach(function (img) {
-			if (img.classList.contains('staff-img') || img.closest('.staff-img-col') || img.closest('.staff-member') || img.closest('.wp-block-gallery') || img.closest('.behind-scenes') || img.closest('.gallery-grid') || img.classList.contains('no-lightbox')) {
+			if (img.classList.contains('staff-img') || img.closest('.staff-img-col') || img.closest('.staff-member') || img.closest('.wp-block-gallery') || img.closest('.behind-scenes') || img.closest('.gallery-grid') || img.closest('.show-gallery-card-link') || img.closest('.show-gallery-card') || img.closest('.show-gallery-card-wrapper') || img.closest('.show-gallery-grid') || img.closest('.gallery-grid-new') || img.classList.contains('no-lightbox')) {
 				img.dataset.lightboxBound = 'true';
 				return;
 			}

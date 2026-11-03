@@ -36,7 +36,7 @@ function onstage_register_show_cpt() {
 		array(
 			'labels'              => $labels,
 			'public'              => true,
-			'show_in_rest'        => true,
+			'show_in_rest'        => false,
 			'has_archive'         => false,
 			'menu_icon'           => 'dashicons-tickets-alt',
 			'menu_position'       => 5,

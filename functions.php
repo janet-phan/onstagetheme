@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.27' );
+define( 'ONSTAGE_VERSION', '1.0.28' );
 define( 'ONSTAGE_CONTENT_VERSION', '1.0.27' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
@@ -920,13 +920,15 @@ function onstage_render_staff_profiles() {
 add_shortcode( 'onstage_staff_profiles', 'onstage_render_staff_profiles' );
 
 /**
- * Enqueue WP Media scripts on user profile edit screens in WP Admin.
+ * Enqueue WP Media and UI scripts on post, user, and reorder screens in WP Admin.
  *
  * @param string $hook Admin page hook.
  */
 function onstage_enqueue_admin_user_media( $hook ) {
-	if ( 'profile.php' === $hook || 'user-edit.php' === $hook || 'user-new.php' === $hook ) {
+	$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+	if ( in_array( $hook, array( 'profile.php', 'user-edit.php', 'user-new.php', 'post.php', 'post-new.php' ), true ) || false !== strpos( $page, 'reorder' ) ) {
 		wp_enqueue_media();
+		wp_enqueue_script( 'jquery-ui-sortable' );
 	}
 }
 add_action( 'admin_enqueue_scripts', 'onstage_enqueue_admin_user_media' );

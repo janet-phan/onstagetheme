@@ -242,7 +242,8 @@ function onstage_render_client_dashboard() {
 				</div>
 				<div style="display:flex; gap:10px; flex-wrap:wrap;">
 					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery' ) ); ?>" class="button button-primary" style="background:#6A3FC7; border-color:#6A3FC7; font-weight:600;"><?php esc_html_e( 'View All Albums', 'onstage' ); ?></a>
-					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-galleries' ) ); ?>" class="button button-secondary"><?php esc_html_e( '↕ Reorder Albums', 'onstage' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-galleries&tab=photo' ) ); ?>" class="button button-secondary"><?php esc_html_e( '↕ Reorder Photos', 'onstage' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-costumes&tab=costume' ) ); ?>" class="button button-secondary"><?php esc_html_e( '↕ Reorder Costumes', 'onstage' ); ?></a>
 					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=gallery' ) ); ?>" class="button button-secondary"><?php esc_html_e( '+ Add New Album', 'onstage' ); ?></a>
 				</div>
 			</div>

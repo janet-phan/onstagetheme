@@ -304,6 +304,51 @@ function onstage_show_gallery_page_blocks( $args ) {
  * @return string
  */
 function onstage_costume_collection_page_blocks( $args ) {
+	// If CPT post exists with custom uploaded costume photos, use them dynamically!
+	if ( ! empty( $args['title'] ) ) {
+		$cpt = get_page_by_title( $args['title'], OBJECT, 'gallery' );
+		if ( ! $cpt ) {
+			// Try slug or common titles
+			$slug = sanitize_title( $args['title'] );
+			$cpt  = get_page_by_path( $slug . '-cpt', OBJECT, 'gallery' );
+		}
+		if ( ! $cpt && false !== strpos( strtolower( $args['title'] ), 'peter' ) ) {
+			$cpt = get_page_by_path( 'peter-pan-costumes-cpt', OBJECT, 'gallery' );
+		}
+		if ( ! $cpt && false !== strpos( strtolower( $args['title'] ), 'oliver' ) ) {
+			$cpt = get_page_by_path( 'oliver-costumes-cpt', OBJECT, 'gallery' );
+		}
+		if ( ! $cpt && ( false !== strpos( strtolower( $args['title'] ), 'carol' ) || false !== strpos( strtolower( $args['title'] ), 'christmas' ) ) ) {
+			$cpt = get_page_by_path( 'christmas-carol-costumes-cpt', OBJECT, 'gallery' );
+		}
+
+		if ( $cpt ) {
+			$meta_images = get_post_meta( $cpt->ID, 'onstage_gallery_images', true );
+			if ( ! empty( $meta_images ) ) {
+				$parsed = array();
+				$lines  = preg_split( '/[\r\n,]+/', $meta_images );
+				foreach ( $lines as $idx => $line ) {
+					$line = trim( $line );
+					if ( ! empty( $line ) ) {
+						if ( filter_var( $line, FILTER_VALIDATE_URL ) ) {
+							$url = $line;
+						} elseif ( is_numeric( $line ) ) {
+							$url = wp_get_attachment_image_url( (int) $line, 'large' );
+						} else {
+							$url = onstage_img( $line );
+						}
+						if ( $url ) {
+							$parsed[] = array( 'src' => $url, 'alt' => sprintf( '%s photo %d', $args['title'], $idx + 1 ) );
+						}
+					}
+				}
+				if ( ! empty( $parsed ) ) {
+					$args['images'] = $parsed;
+				}
+			}
+		}
+	}
+
 	$email   = 'mailto:' . ONSTAGE_EMAIL . '?subject=' . rawurlencode( $args['subject'] );
 	$hero    = isset( $args['hero'] ) ? $args['hero'] : $args['images'][0]['src'];
 	$actions = '<p class="program-child-actions"><a class="btn btn-pink rounded-pill" href="' . esc_url( $email ) . '">EMAIL INQUIRY</a><a class="btn btn-black" href="/costume-rentals/">BACK TO COSTUME RENTALS</a></p>';
