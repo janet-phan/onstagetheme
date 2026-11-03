@@ -3,7 +3,7 @@
  * Show custom post type — productions the client updates often.
  *
  * Fields: title, start date (for chronological sorting), dates / times text,
- * venue, ticket URL, show poster image, body copy.
+ * repeatable performance dates & times builder, venue, ticket URL, show poster image, body copy.
  *
  * @package Onstage
  */
@@ -60,6 +60,16 @@ function onstage_register_show_cpt() {
 	register_post_meta( 'show', 'onstage_show_start_date', array_merge( $meta_args, array(
 		'description' => __( 'Opening / First Performance Date in YYYY-MM-DD for chronological sorting (soonest first)', 'onstage' ),
 	) ) );
+
+	register_post_meta( 'show', 'onstage_show_performances', array(
+		'show_in_rest'      => true,
+		'single'            => true,
+		'type'              => 'string',
+		'auth_callback'     => function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'description'       => __( 'JSON array of performance dates and times', 'onstage' ),
+	) );
 
 	register_post_meta( 'show', 'onstage_show_dates', array_merge( $meta_args, array(
 		'description'       => __( 'Performance dates as shown on the site, e.g. December 5, 2026 - 6:00 PM', 'onstage' ),
@@ -126,7 +136,6 @@ function onstage_extract_show_date( $dates_text ) {
 	// Try generic strtotime on first line
 	$lines = explode( "\n", $clean );
 	$first = trim( $lines[0] );
-	// Remove time portion if any
 	$first_no_time = preg_replace( '/\s*[-–]\s*\d{1,2}:\d{2}.*$/i', '', $first );
 	$ts = strtotime( $first_no_time );
 	if ( $ts && $ts > 0 ) {
@@ -137,18 +146,94 @@ function onstage_extract_show_date( $dates_text ) {
 }
 
 /**
- * Meta box markup — all-in-one centered panel.
+ * Parse existing show dates text into structured array of date/time rows.
+ *
+ * @param string $text Dates text string.
+ * @return array<int, array{date: string, time: string}>
+ */
+function onstage_parse_existing_show_dates_text( $text ) {
+	$rows = array();
+	if ( empty( $text ) ) {
+		return $rows;
+	}
+
+	$lines = preg_split( '/\r\n|\n|\r/', trim( $text ) );
+
+	// If single line contains multiple Month Year occurrences (e.g. December 5, 2026 ... December 6, 2026 ...)
+	if ( 1 === count( $lines ) && preg_match_all( '/(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:[–\-]\d{1,2})?,?\s+\d{4}/i', $text, $matches, PREG_OFFSET_CAPTURE ) ) {
+		$positions = $matches[0];
+		if ( count( $positions ) > 1 ) {
+			$extracted_lines = array();
+			for ( $i = 0; $i < count( $positions ); $i++ ) {
+				$start_idx = $positions[$i][1];
+				$end_idx   = ( $i + 1 < count( $positions ) ) ? $positions[$i+1][1] : strlen( $text );
+				$extracted_lines[] = trim( substr( $text, $start_idx, $end_idx - $start_idx ) );
+			}
+			$lines = $extracted_lines;
+		}
+	}
+
+	foreach ( $lines as $line ) {
+		$line = trim( $line );
+		if ( empty( $line ) ) {
+			continue;
+		}
+		$date_val = onstage_extract_show_date( $line );
+		$time_val = '';
+		if ( preg_match( '/(?:at|[-–])\s*(\d{1,2}(?::\d{2})?\s*(?:[ap]\.?m\.?|AM|PM).*)$/i', $line, $t_match ) ) {
+			$time_val = trim( $t_match[1] );
+		} elseif ( preg_match( '/(\d{1,2}(?::\d{2})?\s*(?:[ap]\.?m\.?|AM|PM).*)/i', $line, $t_match ) ) {
+			$time_val = trim( $t_match[1] );
+		}
+
+		if ( $date_val || $time_val ) {
+			$rows[] = array(
+				'date' => $date_val ? $date_val : '',
+				'time' => $time_val ? $time_val : '',
+			);
+		}
+	}
+
+	return $rows;
+}
+
+/**
+ * Retrieve performance date/time rows for a show.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, array{date: string, time: string}>
+ */
+function onstage_get_show_performances( $post_id ) {
+	$json = get_post_meta( $post_id, 'onstage_show_performances', true );
+	if ( ! empty( $json ) ) {
+		$decoded = json_decode( $json, true );
+		if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+			return $decoded;
+		}
+	}
+
+	$dates_text = get_post_meta( $post_id, 'onstage_show_dates', true );
+	if ( ! empty( $dates_text ) ) {
+		return onstage_parse_existing_show_dates_text( $dates_text );
+	}
+
+	return array();
+}
+
+/**
+ * Meta box markup — all-in-one centered panel with Date/Add Date/Time builder.
  *
  * @param WP_Post $post Current post.
  */
 function onstage_show_meta_box_html( $post ) {
 	wp_nonce_field( 'onstage_show_meta', 'onstage_show_meta_nonce' );
 
-	$start_date = get_post_meta( $post->ID, 'onstage_show_start_date', true );
-	$dates      = get_post_meta( $post->ID, 'onstage_show_dates', true );
-	$venue      = get_post_meta( $post->ID, 'onstage_show_venue', true );
-	$ticket     = get_post_meta( $post->ID, 'onstage_show_ticket_url', true );
-	$thumb_id   = get_post_thumbnail_id( $post->ID );
+	$start_date   = get_post_meta( $post->ID, 'onstage_show_start_date', true );
+	$dates        = get_post_meta( $post->ID, 'onstage_show_dates', true );
+	$venue        = get_post_meta( $post->ID, 'onstage_show_venue', true );
+	$ticket       = get_post_meta( $post->ID, 'onstage_show_ticket_url', true );
+	$thumb_id     = get_post_thumbnail_id( $post->ID );
+	$performances = onstage_get_show_performances( $post->ID );
 
 	if ( empty( $start_date ) || '9999-12-31' === $start_date ) {
 		$detected_date = onstage_extract_show_date( $dates );
@@ -173,7 +258,7 @@ function onstage_show_meta_box_html( $post ) {
 			<div style="flex:1; min-width:260px;">
 				<h4 style="margin:0 0 6px 0; font-size:16px; color:#0f172a;"><?php esc_html_e( 'Show Poster / Promotional Artwork', 'onstage' ); ?></h4>
 				<p class="description" style="margin:0 0 12px 0; font-size:13px; color:#64748b; line-height:1.5;">
-					<?php esc_html_e( 'Upload the poster image here. It will display on the show page, the ticket card, and the home page banner.', 'onstage' ); ?>
+					<?php esc_html_e( 'Upload the poster image here. It displays on the show page, the ticket card, and the home page banner.', 'onstage' ); ?>
 				</p>
 				<input type="hidden" name="onstage_show_thumbnail_id" id="onstage_show_thumbnail_id" value="<?php echo esc_attr( $thumb_id ); ?>" />
 				<button type="button" class="button button-primary button-large" id="onstage_upload_show_poster_btn" style="background:#0284c7; border-color:#0284c7; font-weight:600;">
@@ -185,25 +270,42 @@ function onstage_show_meta_box_html( $post ) {
 			</div>
 		</div>
 
-		<!-- Dates Section (Chronological Date + Display Text) -->
+		<!-- Repeatable Performance Dates & Times Builder -->
 		<div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:18px; margin-bottom:20px;">
-			<div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
-				<div style="flex:0 0 240px;">
-					<label for="onstage_show_start_date" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#166534;">
-						📅 <?php esc_html_e( 'Opening Date (For Sorting):', 'onstage' ); ?>
+			<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+				<div>
+					<label style="display:block; font-weight:700; font-size:15px; color:#166534;">
+						📅 <?php esc_html_e( 'Performance Dates & Showtimes Builder', 'onstage' ); ?>
 					</label>
-					<input type="date" id="onstage_show_start_date" name="onstage_show_start_date" value="<?php echo esc_attr( ( '9999-12-31' === $start_date ) ? '' : $start_date ); ?>" style="padding:8px 10px; font-size:14px; width:100%; border-radius:4px; border:1px solid #86efac;" />
-					<span class="description" style="display:block; margin-top:5px; font-size:12px; color:#15803d; line-height:1.4;">
-						<?php esc_html_e( 'Controls chronological display order. Soonest upcoming shows appear first. Leave empty for TBA.', 'onstage' ); ?>
+					<span class="description" style="font-size:12px; color:#15803d;">
+						<?php esc_html_e( 'Set performance dates and times. Click "+ Add Another Performance Date" for multiple shows. Dates are automatically sorted soonest first!', 'onstage' ); ?>
 					</span>
 				</div>
-				<div style="flex:1; min-width:280px;">
-					<label for="onstage_show_dates" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#166534;">
-						📝 <?php esc_html_e( 'Performance Dates & Showtimes (Display text):', 'onstage' ); ?>
+				<button type="button" class="button button-secondary" id="onstage_add_perf_date_btn" style="background:#fff; border-color:#86efac; color:#166534; font-weight:600;">
+					<span class="dashicons dashicons-plus-alt2" style="vertical-align:middle; margin-top:-2px;"></span> <?php esc_html_e( '+ Add Another Performance Date', 'onstage' ); ?>
+				</button>
+			</div>
+
+			<input type="hidden" name="onstage_show_performances" id="onstage_show_performances" value="<?php echo esc_attr( wp_json_encode( $performances ) ); ?>" />
+
+			<!-- Dynamic List of Date + Time Rows -->
+			<div id="onstage_perf_rows_list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+
+			<!-- Linked Auto-Calculated Controls -->
+			<div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; margin-top:14px; padding-top:14px; border-top:1px dashed #86efac;">
+				<div style="flex:0 0 220px;">
+					<label for="onstage_show_start_date" style="display:block; font-weight:700; font-size:12px; margin-bottom:4px; color:#166534;">
+						<?php esc_html_e( 'Opening Date (Soonest first sort):', 'onstage' ); ?>
 					</label>
-					<textarea id="onstage_show_dates" name="onstage_show_dates" rows="3" class="widefat" placeholder="<?php esc_attr_e( 'e.g. December 5, 2026 - 6:00 PM&#10;December 6, 2026 - 2:00 PM', 'onstage' ); ?>" style="padding:8px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac;"><?php echo esc_textarea( $dates ); ?></textarea>
-					<span class="description" style="display:block; margin-top:5px; font-size:12px; color:#15803d; line-height:1.4;">
-						<?php esc_html_e( 'The exact text shown on the website cards. Leave blank to display TBA.', 'onstage' ); ?>
+					<input type="date" id="onstage_show_start_date" name="onstage_show_start_date" value="<?php echo esc_attr( ( '9999-12-31' === $start_date ) ? '' : $start_date ); ?>" style="padding:6px 10px; font-size:13px; width:100%; border-radius:4px; border:1px solid #86efac; background:#fff;" />
+				</div>
+				<div style="flex:1; min-width:260px;">
+					<label for="onstage_show_dates" style="display:block; font-weight:700; font-size:12px; margin-bottom:4px; color:#166534;">
+						<?php esc_html_e( 'Website Display Text (Auto-formats from dates above):', 'onstage' ); ?>
+					</label>
+					<textarea id="onstage_show_dates" name="onstage_show_dates" rows="2" class="widefat" placeholder="<?php esc_attr_e( 'e.g. December 5, 2026 - 6:00 PM&#10;December 6, 2026 - 2:00 PM', 'onstage' ); ?>" style="padding:6px 10px; font-size:13px; border-radius:4px; border:1px solid #86efac; background:#fff;"><?php echo esc_textarea( $dates ); ?></textarea>
+					<span class="description" style="display:block; margin-top:3px; font-size:11px; color:#15803d;">
+						<?php esc_html_e( 'Shown directly on the show card and event listings.', 'onstage' ); ?>
 					</span>
 				</div>
 			</div>
@@ -236,6 +338,7 @@ function onstage_show_meta_box_html( $post ) {
 
 	<script>
 	jQuery(document).ready(function($) {
+		// Poster Media Uploader
 		var showMediaFrame;
 		$('#onstage_upload_show_poster_btn').on('click', function(e) {
 			e.preventDefault();
@@ -261,6 +364,105 @@ function onstage_show_meta_box_html( $post ) {
 			$('#onstage_show_thumbnail_id').val('');
 			$('#onstage_show_poster_preview').attr('src', '<?php echo esc_js( onstage_img( 'placeholder_show.png' ) ); ?>');
 		});
+
+		// Performance Dates & Times Builder
+		var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+		var perfRows = <?php echo wp_json_encode( $performances ); ?>;
+		if (!Array.isArray(perfRows) || perfRows.length === 0) {
+			var initDate = $('#onstage_show_start_date').val() || '';
+			perfRows = [{ date: initDate, time: '' }];
+		}
+
+		function formatDateString(ymd) {
+			if (!ymd) return '';
+			var parts = ymd.split('-');
+			if (parts.length !== 3) return ymd;
+			var y = parseInt(parts[0], 10);
+			var m = parseInt(parts[1], 10) - 1;
+			var d = parseInt(parts[2], 10);
+			return monthNames[m] + ' ' + d + ', ' + y;
+		}
+
+		function syncAllRows() {
+			var lines = [];
+			var earliest = '';
+			var validRows = [];
+
+			$('#onstage_perf_rows_list .onstage-perf-row').each(function(idx) {
+				var d = $(this).find('.onstage-perf-date-input').val();
+				var t = $(this).find('.onstage-perf-time-input').val();
+				validRows.push({ date: d, time: t });
+
+				if (d) {
+					if (!earliest || d < earliest) {
+						earliest = d;
+					}
+					var formattedDate = formatDateString(d);
+					if (t) {
+						lines.push(formattedDate + ' - ' + t);
+					} else {
+						lines.push(formattedDate);
+					}
+				} else if (t) {
+					lines.push(t);
+				}
+			});
+
+			if (earliest) {
+				$('#onstage_show_start_date').val(earliest);
+			}
+			if (lines.length > 0) {
+				$('#onstage_show_dates').val(lines.join("\n"));
+			}
+			$('#onstage_show_performances').val(JSON.stringify(validRows));
+		}
+
+		function renderRows() {
+			var $container = $('#onstage_perf_rows_list');
+			$container.empty();
+
+			perfRows.forEach(function(item, idx) {
+				var $row = $(
+					'<div class="onstage-perf-row" data-idx="' + idx + '" style="display:flex; gap:12px; align-items:center; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">' +
+						'<span style="font-weight:700; color:#0284c7; font-size:12px; min-width:24px;">#' + (idx + 1) + '</span>' +
+						'<div>' +
+							'<label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:2px;"><?php echo esc_js( __( 'Date:', 'onstage' ) ); ?></label>' +
+							'<input type="date" class="onstage-perf-date-input" value="' + (item.date || '') + '" style="padding:6px 10px; font-size:13px; border-radius:4px; border:1px solid #cbd5e1;" />' +
+						'</div>' +
+						'<div style="flex:1;">' +
+							'<label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:2px;"><?php echo esc_js( __( 'Performance Time (e.g. 6:00 PM or 2:00 p.m.):', 'onstage' ) ); ?></label>' +
+							'<input type="text" class="onstage-perf-time-input" value="' + (item.time || '') + '" placeholder="e.g. 6:00 PM" style="width:100%; padding:6px 10px; font-size:13px; border-radius:4px; border:1px solid #cbd5e1;" />' +
+						'</div>' +
+						'<button type="button" class="button button-link-delete onstage-remove-row-btn" style="color:#ef4444; font-size:18px; margin-top:14px; text-decoration:none;" title="<?php echo esc_js( __( 'Remove date', 'onstage' ) ); ?>">&times;</button>' +
+					'</div>'
+				);
+				$container.append($row);
+			});
+		}
+
+		renderRows();
+
+		$('#onstage_add_perf_date_btn').on('click', function(e) {
+			e.preventDefault();
+			perfRows.push({ date: '', time: '' });
+			renderRows();
+			syncAllRows();
+		});
+
+		$('#onstage_perf_rows_list').on('click', '.onstage-remove-row-btn', function(e) {
+			e.preventDefault();
+			var idx = $(this).closest('.onstage-perf-row').data('idx');
+			perfRows.splice(idx, 1);
+			if (perfRows.length === 0) {
+				perfRows = [{ date: '', time: '' }];
+			}
+			renderRows();
+			syncAllRows();
+		});
+
+		$('#onstage_perf_rows_list').on('input change', '.onstage-perf-date-input, .onstage-perf-time-input', function() {
+			syncAllRows();
+		});
 	});
 	</script>
 	<?php
@@ -285,7 +487,11 @@ function onstage_save_show_meta( $post_id ) {
 	$dates = isset( $_POST['onstage_show_dates'] ) ? sanitize_textarea_field( wp_unslash( $_POST['onstage_show_dates'] ) ) : '';
 	update_post_meta( $post_id, 'onstage_show_dates', $dates );
 
-	// Start date for chronological sorting
+	if ( isset( $_POST['onstage_show_performances'] ) ) {
+		update_post_meta( $post_id, 'onstage_show_performances', wp_unslash( $_POST['onstage_show_performances'] ) );
+	}
+
+	// Start date for chronological sorting (soonest first)
 	$start_date = isset( $_POST['onstage_show_start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['onstage_show_start_date'] ) ) : '';
 	if ( empty( $start_date ) ) {
 		$extracted = onstage_extract_show_date( $dates );
@@ -381,7 +587,7 @@ function onstage_show_columns( $columns ) {
 	$new_columns['cb']                  = $columns['cb'];
 	$new_columns['onstage_poster']      = __( 'Poster', 'onstage' );
 	$new_columns['title']               = __( 'Show Title', 'onstage' );
-	$new_columns['onstage_start_date']  = __( 'Show Date', 'onstage' );
+	$new_columns['onstage_start_date']  = __( 'Opening Date', 'onstage' );
 	$new_columns['onstage_dates']       = __( 'Showtimes Display', 'onstage' );
 	$new_columns['onstage_venue']       = __( 'Venue', 'onstage' );
 	$new_columns['onstage_ticket']      = __( 'Tickets', 'onstage' );
@@ -414,7 +620,7 @@ function onstage_show_column_content( $column, $post_id ) {
 	}
 	if ( 'onstage_dates' === $column ) {
 		$dates = get_post_meta( $post_id, 'onstage_show_dates', true );
-		echo $dates ? esc_html( $dates ) : esc_html__( 'TBA', 'onstage' );
+		echo $dates ? nl2br( esc_html( $dates ) ) : esc_html__( 'TBA', 'onstage' );
 	}
 	if ( 'onstage_venue' === $column ) {
 		echo esc_html( get_post_meta( $post_id, 'onstage_show_venue', true ) );

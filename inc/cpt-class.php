@@ -3,6 +3,7 @@
  * Class custom post type — weekly studio schedule cards.
  *
  * Automatically displays classes in chronological order by time slot.
+ * Supports standard AM/PM time pickers, 2400 military time, and custom ranges.
  *
  * @package Onstage
  */
@@ -61,8 +62,14 @@ function onstage_register_class_cpt() {
 	register_post_meta( 'studio_class', 'onstage_class_weekday', array_merge( $meta_args, array(
 		'description' => __( 'Weekday key: monday, tuesday, wednesday, thursday, saturday', 'onstage' ),
 	) ) );
+	register_post_meta( 'studio_class', 'onstage_class_start_time', array_merge( $meta_args, array(
+		'description' => __( 'Start time in 24-hr format (HH:MM)', 'onstage' ),
+	) ) );
+	register_post_meta( 'studio_class', 'onstage_class_end_time', array_merge( $meta_args, array(
+		'description' => __( 'End time in 24-hr format (HH:MM)', 'onstage' ),
+	) ) );
 	register_post_meta( 'studio_class', 'onstage_class_time', array_merge( $meta_args, array(
-		'description' => __( 'Time range, e.g. 3:30–4:30 p.m.', 'onstage' ),
+		'description' => __( 'Formatted time range text, e.g. 3:30–4:30 p.m.', 'onstage' ),
 	) ) );
 	register_post_meta( 'studio_class', 'onstage_class_time_minutes', array(
 		'show_in_rest'      => true,
@@ -142,8 +149,9 @@ function onstage_class_categories() {
 
 /**
  * Convert class time string to minutes from midnight for chronological sorting.
+ * Supports AM/PM, standard 12-hr, and 2400 military time.
  *
- * @param string $time_str Time range string.
+ * @param string $time_str Time range or time string.
  * @return int Minutes from midnight (0-1439).
  */
 function onstage_parse_class_time( $time_str ) {
@@ -157,12 +165,22 @@ function onstage_parse_class_time( $time_str ) {
 	$parts = explode( '-', $str );
 	$start = trim( $parts[0] );
 
+	// Support pure 2400 military time without colon (e.g. 1530 or 0900)
+	if ( preg_match( '/^([01]\d|2[0-3])([0-5]\d)$/', $start, $m_mil ) ) {
+		return ( (int) $m_mil[1] * 60 ) + (int) $m_mil[2];
+	}
+
 	$start_has_pm = ( false !== strpos( $start, 'pm' ) || false !== strpos( $start, 'p.m.' ) );
 	$start_has_am = ( false !== strpos( $start, 'am' ) || false !== strpos( $start, 'a.m.' ) );
 
 	if ( preg_match( '/(\d{1,2})(?::(\d{2}))?/', $start, $matches ) ) {
 		$hour = (int) $matches[1];
 		$min  = isset( $matches[2] ) ? (int) $matches[2] : 0;
+
+		// If hour is already 24-hr military time (13-23)
+		if ( $hour >= 13 && $hour <= 23 ) {
+			return ( $hour * 60 ) + $min;
+		}
 
 		if ( $start_has_pm ) {
 			if ( $hour < 12 ) {
@@ -186,6 +204,50 @@ function onstage_parse_class_time( $time_str ) {
 }
 
 /**
+ * Extract 24-hour start and end times (HH:MM) from existing time range string.
+ *
+ * @param string $time_str Formatted string, e.g. "3:30–4:30 p.m.".
+ * @return array{start: string, end: string}
+ */
+function onstage_extract_time_range_24h( $time_str ) {
+	if ( empty( $time_str ) ) {
+		return array( 'start' => '', 'end' => '' );
+	}
+
+	$clean = strtolower( trim( $time_str ) );
+	$clean = str_replace( array( '&ndash;', '—', '–', '-' ), '-', $clean );
+	$parts = explode( '-', $clean );
+
+	if ( count( $parts ) < 2 ) {
+		$min = onstage_parse_class_time( $clean );
+		if ( 9999 !== $min ) {
+			return array(
+				'start' => sprintf( '%02d:%02d', floor( $min / 60 ), $min % 60 ),
+				'end'   => '',
+			);
+		}
+		return array( 'start' => '', 'end' => '' );
+	}
+
+	$start_part = trim( $parts[0] );
+	$end_part   = trim( $parts[1] );
+
+	$has_pm = ( false !== strpos( $clean, 'pm' ) || false !== strpos( $clean, 'p.m.' ) );
+
+	if ( $has_pm && false === strpos( $start_part, 'am' ) && false === strpos( $start_part, 'a.m.' ) ) {
+		$start_part .= ' pm';
+	}
+
+	$start_min = onstage_parse_class_time( $start_part );
+	$end_min   = onstage_parse_class_time( $end_part );
+
+	return array(
+		'start' => ( 9999 !== $start_min ) ? sprintf( '%02d:%02d', floor( $start_min / 60 ), $start_min % 60 ) : '',
+		'end'   => ( 9999 !== $end_min ) ? sprintf( '%02d:%02d', floor( $end_min / 60 ), $end_min % 60 ) : '',
+	);
+}
+
+/**
  * Centered Meta Box for Class details so all editing is in one area.
  */
 function onstage_class_meta_box() {
@@ -201,22 +263,31 @@ function onstage_class_meta_box() {
 add_action( 'add_meta_boxes', 'onstage_class_meta_box' );
 
 /**
- * Meta box markup.
+ * Meta box markup with AM/PM and 24-hr time selection.
  *
  * @param WP_Post $post Current post.
  */
 function onstage_class_meta_box_html( $post ) {
 	wp_nonce_field( 'onstage_class_meta', 'onstage_class_meta_nonce' );
 	$weekday    = get_post_meta( $post->ID, 'onstage_class_weekday', true );
+	$start_time = get_post_meta( $post->ID, 'onstage_class_start_time', true );
+	$end_time   = get_post_meta( $post->ID, 'onstage_class_end_time', true );
 	$time       = get_post_meta( $post->ID, 'onstage_class_time', true );
 	$ages       = get_post_meta( $post->ID, 'onstage_class_ages', true );
 	$instructor = get_post_meta( $post->ID, 'onstage_class_instructor', true );
 	$category   = get_post_meta( $post->ID, 'onstage_class_category', true );
 	$is_new     = (bool) get_post_meta( $post->ID, 'onstage_class_is_new', true );
+
+	// Pre-populate time pickers from existing time string if empty
+	if ( empty( $start_time ) && ! empty( $time ) ) {
+		$extracted = onstage_extract_time_range_24h( $time );
+		$start_time = $extracted['start'];
+		$end_time   = $extracted['end'];
+	}
 	?>
 	<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:10px 0;">
 		
-		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:20px;">
+		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:20px;">
 			<!-- Weekday -->
 			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
 				<label for="onstage_class_weekday" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
@@ -227,22 +298,44 @@ function onstage_class_meta_box_html( $post ) {
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $weekday, $key ); ?>><?php echo esc_html( $day['label'] ); ?></option>
 					<?php endforeach; ?>
 				</select>
-				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#64748b;"><?php esc_html_e( 'Which day column this class appears under.', 'onstage' ); ?></span>
+				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#64748b;"><?php esc_html_e( 'Which day column this class appears under on the weekly schedule.', 'onstage' ); ?></span>
 			</div>
 
-			<!-- Time -->
+			<!-- Time Selection (AM/PM & 24hr Military) -->
 			<div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px;">
-				<label for="onstage_class_time" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#166534;">
-					⏰ <?php esc_html_e( 'Class Time (Auto-Chronological):', 'onstage' ); ?>
+				<label style="display:block; font-weight:700; font-size:14px; margin-bottom:8px; color:#166534;">
+					⏰ <?php esc_html_e( 'Class Time Slot (Automatic Chronological Order):', 'onstage' ); ?>
 				</label>
-				<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." style="padding:8px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac;" />
-				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#15803d;">
-					<?php esc_html_e( 'Classes automatically sort in time order from morning to evening.', 'onstage' ); ?>
-				</span>
+				
+				<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+					<div>
+						<label for="onstage_class_start_time" style="display:block; font-size:12px; font-weight:600; color:#166534; margin-bottom:2px;">
+							<?php esc_html_e( 'Start Time (AM/PM / 24hr):', 'onstage' ); ?>
+						</label>
+						<input type="time" id="onstage_class_start_time" name="onstage_class_start_time" value="<?php echo esc_attr( $start_time ); ?>" style="padding:6px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac; background:#fff;" />
+					</div>
+					<span style="font-weight:700; color:#166534; margin-top:16px;">—</span>
+					<div>
+						<label for="onstage_class_end_time" style="display:block; font-size:12px; font-weight:600; color:#166534; margin-bottom:2px;">
+							<?php esc_html_e( 'End Time (AM/PM / 24hr):', 'onstage' ); ?>
+						</label>
+						<input type="time" id="onstage_class_end_time" name="onstage_class_end_time" value="<?php echo esc_attr( $end_time ); ?>" style="padding:6px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac; background:#fff;" />
+					</div>
+				</div>
+
+				<div>
+					<label for="onstage_class_time" style="display:block; font-size:12px; font-weight:600; color:#166534; margin-bottom:2px;">
+						<?php esc_html_e( 'Schedule Display Text (Auto-formats or type custom):', 'onstage' ); ?>
+					</label>
+					<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." style="padding:7px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac; background:#fff;" />
+					<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#15803d;">
+						<?php esc_html_e( 'Selecting times above auto-formats this text and automatically sorts classes chronologically on the website!', 'onstage' ); ?>
+					</span>
+				</div>
 			</div>
 		</div>
 
-		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:20px;">
+		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:20px;">
 			<!-- Age Group -->
 			<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
 				<label for="onstage_class_ages" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
@@ -285,6 +378,46 @@ function onstage_class_meta_box_html( $post ) {
 			</label>
 		</div>
 	</div>
+
+	<script>
+	jQuery(document).ready(function($) {
+		function formatSingleTime(time24) {
+			if (!time24) return '';
+			var parts = time24.split(':');
+			var hour = parseInt(parts[0], 10);
+			var min = parseInt(parts[1], 10);
+			var ampm = hour >= 12 ? 'p.m.' : 'a.m.';
+			var h12 = hour % 12;
+			if (h12 === 0) h12 = 12;
+			var minStr = min > 0 ? (min < 10 ? ':0' + min : ':' + min) : ':00';
+			return { h12: h12, minStr: minStr, ampm: ampm, totalMin: (hour * 60) + min };
+		}
+
+		function updateFormattedDisplay() {
+			var start = $('#onstage_class_start_time').val();
+			var end = $('#onstage_class_end_time').val();
+			if (!start) return;
+
+			var s = formatSingleTime(start);
+			if (end) {
+				var e = formatSingleTime(end);
+				if (s.ampm === e.ampm) {
+					// e.g. 3:30–4:30 p.m.
+					$('#onstage_class_time').val(s.h12 + s.minStr + '–' + e.h12 + e.minStr + ' ' + e.ampm);
+				} else {
+					// e.g. 11:15 a.m.–12:15 p.m.
+					$('#onstage_class_time').val(s.h12 + s.minStr + ' ' + s.ampm + '–' + e.h12 + e.minStr + ' ' + e.ampm);
+				}
+			} else {
+				$('#onstage_class_time').val(s.h12 + s.minStr + ' ' + s.ampm);
+			}
+		}
+
+		$('#onstage_class_start_time, #onstage_class_end_time').on('change input', function() {
+			updateFormattedDisplay();
+		});
+	});
+	</script>
 	<?php
 }
 
@@ -311,10 +444,21 @@ function onstage_save_class_meta( $post_id ) {
 	}
 	update_post_meta( $post_id, 'onstage_class_weekday', $weekday );
 
+	$start_time = isset( $_POST['onstage_class_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['onstage_class_start_time'] ) ) : '';
+	$end_time   = isset( $_POST['onstage_class_end_time'] ) ? sanitize_text_field( wp_unslash( $_POST['onstage_class_end_time'] ) ) : '';
+	update_post_meta( $post_id, 'onstage_class_start_time', $start_time );
+	update_post_meta( $post_id, 'onstage_class_end_time', $end_time );
+
 	$time = isset( $_POST['onstage_class_time'] ) ? sanitize_text_field( wp_unslash( $_POST['onstage_class_time'] ) ) : '';
 	update_post_meta( $post_id, 'onstage_class_time', $time );
 
-	$minutes = onstage_parse_class_time( $time );
+	// Calculate chronological minutes: check start_time first (exact 24hr), fallback to parse string
+	if ( ! empty( $start_time ) && false !== strpos( $start_time, ':' ) ) {
+		$t_parts = explode( ':', $start_time );
+		$minutes = ( (int) $t_parts[0] * 60 ) + (int) $t_parts[1];
+	} else {
+		$minutes = onstage_parse_class_time( $time );
+	}
 	update_post_meta( $post_id, 'onstage_class_time_minutes', $minutes );
 
 	foreach ( array( 'onstage_class_ages', 'onstage_class_instructor' ) as $key ) {
