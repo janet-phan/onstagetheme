@@ -2,8 +2,7 @@
 /**
  * Class custom post type — weekly studio schedule cards.
  *
- * Not a calendar plugin. One post per class; the Programs page renders
- * a weekday grid via [onstage_class_schedule].
+ * Automatically displays classes in chronological order by time slot.
  *
  * @package Onstage
  */
@@ -65,6 +64,15 @@ function onstage_register_class_cpt() {
 	register_post_meta( 'studio_class', 'onstage_class_time', array_merge( $meta_args, array(
 		'description' => __( 'Time range, e.g. 3:30–4:30 p.m.', 'onstage' ),
 	) ) );
+	register_post_meta( 'studio_class', 'onstage_class_time_minutes', array(
+		'show_in_rest'      => true,
+		'single'            => true,
+		'type'              => 'integer',
+		'auth_callback'     => function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'description'       => __( 'Start time in minutes from midnight for chronological sorting', 'onstage' ),
+	) );
 	register_post_meta( 'studio_class', 'onstage_class_ages', array_merge( $meta_args, array(
 		'description' => __( 'Age range or extra note', 'onstage' ),
 	) ) );
@@ -133,15 +141,60 @@ function onstage_class_categories() {
 }
 
 /**
- * Meta box for weekday / time / ages / instructor / category / NEW.
+ * Convert class time string to minutes from midnight for chronological sorting.
+ *
+ * @param string $time_str Time range string.
+ * @return int Minutes from midnight (0-1439).
+ */
+function onstage_parse_class_time( $time_str ) {
+	if ( empty( $time_str ) ) {
+		return 9999;
+	}
+
+	$str = strtolower( trim( $time_str ) );
+	$str = str_replace( array( '&ndash;', '—', '–', '-' ), '-', $str );
+
+	$parts = explode( '-', $str );
+	$start = trim( $parts[0] );
+
+	$start_has_pm = ( false !== strpos( $start, 'pm' ) || false !== strpos( $start, 'p.m.' ) );
+	$start_has_am = ( false !== strpos( $start, 'am' ) || false !== strpos( $start, 'a.m.' ) );
+
+	if ( preg_match( '/(\d{1,2})(?::(\d{2}))?/', $start, $matches ) ) {
+		$hour = (int) $matches[1];
+		$min  = isset( $matches[2] ) ? (int) $matches[2] : 0;
+
+		if ( $start_has_pm ) {
+			if ( $hour < 12 ) {
+				$hour += 12;
+			}
+		} elseif ( $start_has_am ) {
+			if ( 12 === $hour ) {
+				$hour = 0;
+			}
+		} else {
+			// Infer from studio schedule hours (typical afternoon/evening classes: 1:00-7:59 are PM):
+			if ( $hour >= 1 && $hour <= 7 ) {
+				$hour += 12;
+			}
+		}
+
+		return ( $hour * 60 ) + $min;
+	}
+
+	return 9999;
+}
+
+/**
+ * Centered Meta Box for Class details so all editing is in one area.
  */
 function onstage_class_meta_box() {
 	add_meta_box(
 		'onstage_class_details',
-		__( 'Class details', 'onstage' ),
+		__( '🩰 Studio Class Schedule Details', 'onstage' ),
 		'onstage_class_meta_box_html',
 		'studio_class',
-		'side',
+		'normal',
 		'high'
 	);
 }
@@ -161,49 +214,77 @@ function onstage_class_meta_box_html( $post ) {
 	$category   = get_post_meta( $post->ID, 'onstage_class_category', true );
 	$is_new     = (bool) get_post_meta( $post->ID, 'onstage_class_is_new', true );
 	?>
-	<p>
-		<label for="onstage_class_weekday"><strong><?php esc_html_e( 'Day of the Week', 'onstage' ); ?></strong></label><br />
-		<select id="onstage_class_weekday" name="onstage_class_weekday" class="widefat" style="margin-top:4px;">
-			<?php foreach ( onstage_class_weekdays() as $key => $day ) : ?>
-				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $weekday, $key ); ?>><?php echo esc_html( $day['label'] ); ?></option>
-			<?php endforeach; ?>
-		</select>
-		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Which day column this class appears under.', 'onstage' ); ?></span>
-	</p>
-	<p>
-		<label for="onstage_class_time"><strong><?php esc_html_e( 'Class Time', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." style="margin-top:4px;" />
-		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Time range (e.g. 3:30–4:30 p.m.).', 'onstage' ); ?></span>
-	</p>
-	<p>
-		<label for="onstage_class_ages"><strong><?php esc_html_e( 'Age Group / Level Note', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_ages" name="onstage_class_ages" class="widefat" value="<?php echo esc_attr( $ages ); ?>" placeholder="Ages 4–6 or Teen/Adult" style="margin-top:4px;" />
-		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Student age range or level note.', 'onstage' ); ?></span>
-	</p>
-	<p>
-		<label for="onstage_class_instructor"><strong><?php esc_html_e( 'Instructor Name(s)', 'onstage' ); ?></strong></label><br />
-		<input type="text" id="onstage_class_instructor" name="onstage_class_instructor" class="widefat" value="<?php echo esc_attr( $instructor ); ?>" placeholder="Miss Linda / Miss Sarah" style="margin-top:4px;" />
-		<span class="description" style="display:block; margin-top:2px; font-size:12px;"><?php esc_html_e( 'Name of teacher(s) for this class.', 'onstage' ); ?></span>
-	</p>
-	<p>
-		<label for="onstage_class_category"><strong><?php esc_html_e( 'Category & Card Color Style', 'onstage' ); ?></strong></label><br />
-		<select id="onstage_class_category" name="onstage_class_category" class="widefat" style="margin-top:4px;">
-			<option value="company" <?php selected( $category, 'company' ); ?>><?php esc_html_e( 'Company Teams (Blue)', 'onstage' ); ?></option>
-			<option value="theater" <?php selected( $category, 'theater' ); ?>><?php esc_html_e( 'Musical Theater (Pink)', 'onstage' ); ?></option>
-			<option value="combo" <?php selected( $category, 'combo' ); ?>><?php esc_html_e( 'Little Ones / Combo (Green)', 'onstage' ); ?></option>
-			<option value="teen" <?php selected( $category, 'teen' ); ?>><?php esc_html_e( 'Teen & Adult (Purple)', 'onstage' ); ?></option>
-			<option value="rehearsal" <?php selected( $category, 'rehearsal' ); ?>><?php esc_html_e( 'Rehearsals & Shows (Orange)', 'onstage' ); ?></option>
-			<option value="hiphop" <?php selected( $category, 'hiphop' ); ?>><?php esc_html_e( 'Hip Hop (Teal)', 'onstage' ); ?></option>
-		</select>
-	</p>
-	<p style="background:#fef3c7; border:1px solid #fde047; padding:10px; border-radius:4px; margin-top:12px;">
-		<label style="font-weight:600; color:#854d0e;">
-			<input type="checkbox" name="onstage_class_is_new" value="1" <?php checked( $is_new ); ?> />
-			<?php esc_html_e( '☑ Highlight as NEW Class (Displays "NEW" badge)', 'onstage' ); ?>
-		</label>
-		<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#a16207;"><?php esc_html_e( 'Check this box to highlight this class with a bright NEW badge on the website schedule.', 'onstage' ); ?></span>
-	</p>
-	<p class="description" style="margin-top:12px; font-size:12px; color:#64748b;"><?php esc_html_e( '💡 Order on Schedule: Set "Order" under Page Attributes (lower numbers appear earlier in the day).', 'onstage' ); ?></p>
+	<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:10px 0;">
+		
+		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:20px;">
+			<!-- Weekday -->
+			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+				<label for="onstage_class_weekday" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
+					📅 <?php esc_html_e( 'Day of the Week:', 'onstage' ); ?>
+				</label>
+				<select id="onstage_class_weekday" name="onstage_class_weekday" class="widefat" style="padding:8px 10px; font-size:14px; border-radius:4px;">
+					<?php foreach ( onstage_class_weekdays() as $key => $day ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $weekday, $key ); ?>><?php echo esc_html( $day['label'] ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#64748b;"><?php esc_html_e( 'Which day column this class appears under.', 'onstage' ); ?></span>
+			</div>
+
+			<!-- Time -->
+			<div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px;">
+				<label for="onstage_class_time" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#166534;">
+					⏰ <?php esc_html_e( 'Class Time (Auto-Chronological):', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_class_time" name="onstage_class_time" class="widefat" value="<?php echo esc_attr( $time ); ?>" placeholder="3:30–4:30 p.m." style="padding:8px 10px; font-size:14px; border-radius:4px; border:1px solid #86efac;" />
+				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#15803d;">
+					<?php esc_html_e( 'Classes automatically sort in time order from morning to evening.', 'onstage' ); ?>
+				</span>
+			</div>
+		</div>
+
+		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:20px;">
+			<!-- Age Group -->
+			<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+				<label for="onstage_class_ages" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
+					👶 <?php esc_html_e( 'Age Group / Level Note:', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_class_ages" name="onstage_class_ages" class="widefat" value="<?php echo esc_attr( $ages ); ?>" placeholder="Ages 4–6 or Teen/Adult" style="padding:8px 10px; font-size:14px; border-radius:4px;" />
+				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#64748b;"><?php esc_html_e( 'Student age range or level note.', 'onstage' ); ?></span>
+			</div>
+
+			<!-- Instructor -->
+			<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+				<label for="onstage_class_instructor" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
+					🧑‍🏫 <?php esc_html_e( 'Instructor Name(s):', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_class_instructor" name="onstage_class_instructor" class="widefat" value="<?php echo esc_attr( $instructor ); ?>" placeholder="Miss Linda / Miss Sarah" style="padding:8px 10px; font-size:14px; border-radius:4px;" />
+				<span class="description" style="display:block; margin-top:4px; font-size:12px; color:#64748b;"><?php esc_html_e( 'Name of teacher(s) for this class.', 'onstage' ); ?></span>
+			</div>
+		</div>
+
+		<!-- Category & Style -->
+		<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:16px; margin-bottom:20px;">
+			<label for="onstage_class_category" style="display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:#0f172a;">
+				🎨 <?php esc_html_e( 'Category & Schedule Card Color Style:', 'onstage' ); ?>
+			</label>
+			<select id="onstage_class_category" name="onstage_class_category" class="widefat" style="padding:8px 10px; font-size:14px; border-radius:4px;">
+				<option value="company" <?php selected( $category, 'company' ); ?>><?php esc_html_e( 'Company Teams (Blue)', 'onstage' ); ?></option>
+				<option value="theater" <?php selected( $category, 'theater' ); ?>><?php esc_html_e( 'Musical Theater (Pink)', 'onstage' ); ?></option>
+				<option value="combo" <?php selected( $category, 'combo' ); ?>><?php esc_html_e( 'Little Ones / Combo (Green)', 'onstage' ); ?></option>
+				<option value="teen" <?php selected( $category, 'teen' ); ?>><?php esc_html_e( 'Teen & Adult (Purple)', 'onstage' ); ?></option>
+				<option value="rehearsal" <?php selected( $category, 'rehearsal' ); ?>><?php esc_html_e( 'Rehearsals & Shows (Orange)', 'onstage' ); ?></option>
+				<option value="hiphop" <?php selected( $category, 'hiphop' ); ?>><?php esc_html_e( 'Hip Hop (Teal)', 'onstage' ); ?></option>
+			</select>
+		</div>
+
+		<!-- NEW Badge Highlight -->
+		<div style="background:#fef3c7; border:1px solid #fde047; padding:14px; border-radius:8px;">
+			<label style="font-weight:700; color:#854d0e; font-size:14px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+				<input type="checkbox" name="onstage_class_is_new" value="1" <?php checked( $is_new ); ?> />
+				<?php esc_html_e( '⭐ Highlight as NEW Class (Displays bright "NEW" badge on card)', 'onstage' ); ?>
+			</label>
+		</div>
+	</div>
 	<?php
 }
 
@@ -230,7 +311,13 @@ function onstage_save_class_meta( $post_id ) {
 	}
 	update_post_meta( $post_id, 'onstage_class_weekday', $weekday );
 
-	foreach ( array( 'onstage_class_time', 'onstage_class_ages', 'onstage_class_instructor' ) as $key ) {
+	$time = isset( $_POST['onstage_class_time'] ) ? sanitize_text_field( wp_unslash( $_POST['onstage_class_time'] ) ) : '';
+	update_post_meta( $post_id, 'onstage_class_time', $time );
+
+	$minutes = onstage_parse_class_time( $time );
+	update_post_meta( $post_id, 'onstage_class_time_minutes', $minutes );
+
+	foreach ( array( 'onstage_class_ages', 'onstage_class_instructor' ) as $key ) {
 		if ( isset( $_POST[ $key ] ) ) {
 			update_post_meta( $post_id, $key, sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) );
 		}
@@ -247,17 +334,44 @@ function onstage_save_class_meta( $post_id ) {
 add_action( 'save_post_studio_class', 'onstage_save_class_meta' );
 
 /**
+ * Auto-populate class time minutes for existing classes if missing.
+ */
+function onstage_backfill_class_time_minutes() {
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	$classes = get_posts( array(
+		'post_type'      => 'studio_class',
+		'post_status'    => array( 'publish', 'draft' ),
+		'posts_per_page' => -1,
+	) );
+
+	foreach ( $classes as $c ) {
+		$min = get_post_meta( $c->ID, 'onstage_class_time_minutes', true );
+		if ( '' === (string) $min ) {
+			$time = get_post_meta( $c->ID, 'onstage_class_time', true );
+			update_post_meta( $c->ID, 'onstage_class_time_minutes', onstage_parse_class_time( $time ) );
+		}
+	}
+}
+add_action( 'admin_init', 'onstage_backfill_class_time_minutes' );
+
+/**
  * Admin columns.
  *
  * @param array $columns Columns.
  * @return array
  */
 function onstage_class_columns( $columns ) {
-	$columns['onstage_weekday']    = __( 'Day', 'onstage' );
-	$columns['onstage_time']       = __( 'Time', 'onstage' );
-	$columns['onstage_instructor'] = __( 'Instructor', 'onstage' );
-	$columns['onstage_category']   = __( 'Category', 'onstage' );
-	return $columns;
+	$new_columns = array();
+	$new_columns['cb']                 = $columns['cb'];
+	$new_columns['title']              = __( 'Class Name', 'onstage' );
+	$new_columns['onstage_weekday']    = __( 'Day', 'onstage' );
+	$new_columns['onstage_time']       = __( 'Time (Sorted Chronologically)', 'onstage' );
+	$new_columns['onstage_instructor'] = __( 'Instructor', 'onstage' );
+	$new_columns['onstage_category']   = __( 'Category', 'onstage' );
+	return $new_columns;
 }
 add_filter( 'manage_studio_class_posts_columns', 'onstage_class_columns' );
 
@@ -274,7 +388,8 @@ function onstage_class_column_content( $column, $post_id ) {
 		echo esc_html( isset( $days[ $key ] ) ? $days[ $key ]['label'] : $key );
 	}
 	if ( 'onstage_time' === $column ) {
-		echo esc_html( get_post_meta( $post_id, 'onstage_class_time', true ) );
+		$time = get_post_meta( $post_id, 'onstage_class_time', true );
+		echo esc_html( $time ? $time : '—' );
 	}
 	if ( 'onstage_instructor' === $column ) {
 		echo esc_html( get_post_meta( $post_id, 'onstage_class_instructor', true ) );
@@ -287,6 +402,7 @@ add_action( 'manage_studio_class_posts_custom_column', 'onstage_class_column_con
 
 /**
  * Render the weekday schedule grid from Class posts.
+ * Automatically sorts classes chronologically by start time!
  *
  * Usage: [onstage_class_schedule]
  *
@@ -299,11 +415,7 @@ function onstage_class_schedule_shortcode() {
 		array(
 			'post_type'      => 'studio_class',
 			'post_status'    => 'publish',
-			'posts_per_page' => 100,
-			'orderby'        => array(
-				'menu_order' => 'ASC',
-				'title'      => 'ASC',
-			),
+			'posts_per_page' => 200,
 			'no_found_rows'  => true,
 		)
 	);
@@ -320,16 +432,38 @@ function onstage_class_schedule_shortcode() {
 			if ( ! isset( $grouped[ $weekday ] ) ) {
 				$weekday = 'monday';
 			}
+
+			$time_str = get_post_meta( get_the_ID(), 'onstage_class_time', true );
+			$minutes  = get_post_meta( get_the_ID(), 'onstage_class_time_minutes', true );
+			if ( '' === (string) $minutes ) {
+				$minutes = onstage_parse_class_time( $time_str );
+			}
+
 			$grouped[ $weekday ][] = array(
-				'title'      => get_the_title(),
-				'time'       => get_post_meta( get_the_ID(), 'onstage_class_time', true ),
-				'ages'       => get_post_meta( get_the_ID(), 'onstage_class_ages', true ),
-				'instructor' => get_post_meta( get_the_ID(), 'onstage_class_instructor', true ),
-				'category'   => get_post_meta( get_the_ID(), 'onstage_class_category', true ),
-				'is_new'     => (bool) get_post_meta( get_the_ID(), 'onstage_class_is_new', true ),
+				'title'        => get_the_title(),
+				'time'         => $time_str,
+				'time_minutes' => (int) $minutes,
+				'menu_order'   => (int) get_post_field( 'menu_order', get_the_ID() ),
+				'ages'         => get_post_meta( get_the_ID(), 'onstage_class_ages', true ),
+				'instructor'   => get_post_meta( get_the_ID(), 'onstage_class_instructor', true ),
+				'category'     => get_post_meta( get_the_ID(), 'onstage_class_category', true ),
+				'is_new'       => (bool) get_post_meta( get_the_ID(), 'onstage_class_is_new', true ),
 			);
 		}
 		wp_reset_postdata();
+	}
+
+	// Sort each weekday's classes chronologically by time!
+	foreach ( array_keys( $days ) as $day_key ) {
+		usort( $grouped[ $day_key ], function( $a, $b ) {
+			if ( $a['time_minutes'] !== $b['time_minutes'] ) {
+				return $a['time_minutes'] <=> $b['time_minutes'];
+			}
+			if ( $a['menu_order'] !== $b['menu_order'] ) {
+				return $a['menu_order'] <=> $b['menu_order'];
+			}
+			return strcmp( $a['title'], $b['title'] );
+		} );
 	}
 
 	ob_start();
@@ -381,6 +515,7 @@ add_shortcode( 'onstage_class_schedule', 'onstage_class_schedule_shortcode' );
 
 /**
  * Fall 2026–2027 seed rows (from the client preview programs page).
+ * Strictly omits former instructors.
  *
  * @return array<int, array<string, mixed>>
  */
@@ -393,34 +528,33 @@ function onstage_class_seed_data() {
 		array( 'Junior Company — Tap', 'monday', '5:30–6:00 p.m.', '', 'Stacy Wong', 'company', 0, 50 ),
 		array( 'Senior & Senior App — Tap and Jazz', 'monday', '6:00–7:30 p.m.', '', 'Lisa Mailloux', 'company', 0, 60 ),
 		array( 'Junior Company — Hip Hop', 'monday', '6:00–6:30 p.m.', '', 'Stacy Wong', 'hiphop', 0, 70 ),
-		array( 'Senior App — Theater Tap / Theater Jazz', 'monday', '7:00–8:30 p.m.', '', 'Elle Gendreau', 'company', 0, 80 ),
+		array( 'Senior App — Theater Tap / Theater Jazz', 'monday', '7:00–8:30 p.m.', '', 'Staff Instructor', 'company', 0, 80 ),
 		array( 'Senior Company — Contemporary', 'monday', '7:30–8:30 p.m.', '', 'Stacy Wong', 'company', 0, 90 ),
 
 		array( 'Hip Hop', 'tuesday', '4:30–5:15 p.m.', 'Ages 8–10', 'Stacy Wong', 'hiphop', 0, 10 ),
 		array( 'Musical Theater — Level I', 'tuesday', '4:30–5:30 p.m.', 'Ages 6–8', 'Roger Botelho and Linda Mercer-Botelho', 'theater', 0, 20 ),
-		array( 'Musical Theater — Level 2', 'tuesday', '5:30–7:00 p.m.', 'Ages 9–10', 'Roger Botelho, Linda Mercer-Botelho, and Stacy Wong', 'theater', 0, 30 ),
-		array( 'Musical Theater — Level 3: Acting & Theater Jazz', 'tuesday', '5:30–7:30 p.m.', 'Ages 11–15', 'Stacy Wong, Roger Botelho, and Linda Mercer-Botelho', 'theater', 0, 40 ),
-		array( 'Alumni — Christmas Performance Preparation', 'tuesday', '7:00–8:15 p.m.', '', 'Lisa Mailloux', 'rehearsal', 0, 50 ),
+		array( 'Ballet & Jazz Combo', 'tuesday', '5:15–6:15 p.m.', 'Ages 8–10', 'Stacy Wong', 'combo', 0, 30 ),
+		array( 'Musical Theater — Level II', 'tuesday', '5:30–6:45 p.m.', 'Ages 9–11', 'Roger Botelho and Linda Mercer-Botelho', 'theater', 0, 40 ),
+		array( 'Teen Hip Hop', 'tuesday', '6:15–7:00 p.m.', 'Ages 11+', 'Stacy Wong', 'hiphop', 0, 50 ),
+		array( 'Musical Theater — Level III', 'tuesday', '6:45–8:00 p.m.', 'Ages 12+', 'Roger Botelho and Linda Mercer-Botelho', 'theater', 0, 60 ),
+		array( 'Company Rehearsal Block', 'tuesday', '8:00–8:45 p.m.', '', 'Linda Mercer-Botelho and Roger Botelho', 'rehearsal', 0, 70 ),
 
-		array( 'Baby Stars — Kinder-Dance', 'wednesday', '4:30–5:15 p.m.', 'Ages 2½–3', 'Linda Mercer-Botelho', 'combo', 1, 10 ),
-		array( 'My Mini\'s — Ballet / Tap / Jazz', 'wednesday', '4:30–6:00 p.m.', 'Ages 7–10', 'Stacy Wong', 'combo', 0, 20 ),
-		array( 'Bright Stars — Ballet I / Tap I', 'wednesday', '5:15–6:00 p.m.', 'Ages 5–7', 'Linda Mercer-Botelho', 'combo', 0, 30 ),
-		array( 'Teen Triple Threat Club — Ballet, Tap, Jazz', 'wednesday', '6:00–7:30 p.m.', 'Ages 10–15', 'Stacy Wong', 'teen', 0, 40 ),
-		array( 'Adult Tap and Jazz', 'wednesday', '6:00–7:30 p.m.', 'Jazz: 6:00–7:00 p.m. Tap: 7:00–7:30 p.m.', 'Elle Gendreau', 'teen', 0, 50 ),
+		array( 'KinderDance Combo', 'wednesday', '3:30–4:30 p.m.', 'Ages 4–6', 'Linda Mercer-Botelho', 'combo', 0, 10 ),
+		array( 'Petite Youth Co. — Ballet & Jazz', 'wednesday', '4:30–5:30 p.m.', 'Ages 6–8', 'Linda Mercer-Botelho', 'company', 0, 20 ),
+		array( 'Petite Youth Co. — Tap', 'wednesday', '5:30–6:00 p.m.', 'Ages 6–8', 'Linda Mercer-Botelho', 'company', 0, 30 ),
+		array( 'Mini Youth Co. — Tap & Jazz', 'wednesday', '5:30–6:30 p.m.', '', 'Stacy Wong', 'company', 0, 40 ),
+		array( 'Adult Tap and Jazz', 'wednesday', '6:00–7:30 p.m.', 'Jazz: 6:00–7:00 p.m. Tap: 7:00–7:30 p.m.', 'Staff Instructor', 'teen', 0, 50 ),
+		array( 'Voice and Piano Lessons', 'wednesday', 'By Appointment', 'All Ages', 'Roger Botelho Jr. and Hannah Miller', 'theater', 0, 60 ),
 
-		array( 'Give Kids a Chance — Beginner Ballet', 'thursday', '3:30–4:30 p.m.', 'Ages 7–10', 'Azusa Okamoto', 'combo', 0, 10 ),
-		array( 'Junior Dance Co. — Ballet', 'thursday', '4:30–5:30 p.m.', '', 'Azusa Okamoto', 'company', 0, 20 ),
-		array( 'Tiny Stars — Pre-Ballet / Pre-Tap', 'thursday', '4:30–5:15 p.m.', 'Ages 4–5', 'Linda Mercer-Botelho', 'combo', 1, 30 ),
-		array( 'Senior & Senior App — Ballet / Pointe', 'thursday', '5:30–7:00 p.m.', '', 'Azusa Okamoto', 'company', 0, 40 ),
-		array( 'Junior Company — Tap / Jazz', 'thursday', '5:30–7:00 p.m.', '', '', 'company', 0, 50 ),
-		array( 'Musical Theater — Levels 4 & 5', 'thursday', '7:00–8:00 p.m.', 'Ages 12–18', 'Linda Mercer-Botelho and Roger Botelho', 'theater', 0, 60 ),
-		array( 'Christmas Rehearsal', 'thursday', '8:00–8:30 p.m.', 'As needed', '', 'rehearsal', 0, 70 ),
+		array( 'Mini Youth Co. — Ballet', 'thursday', '4:30–5:15 p.m.', '', 'Azusa Okamoto', 'company', 0, 10 ),
+		array( 'Junior Youth Co. — Ballet Technique', 'thursday', '5:15–6:15 p.m.', '', 'Azusa Okamoto', 'company', 0, 20 ),
+		array( 'Junior Dance Co. — Ballet Technique', 'thursday', '6:15–7:15 p.m.', '', 'Azusa Okamoto', 'company', 0, 30 ),
+		array( 'Senior & Senior App — Ballet Technique', 'thursday', '7:15–8:45 p.m.', '', 'Azusa Okamoto', 'company', 0, 40 ),
 
-		array( 'Pom / Hip Hop Combo', 'saturday', '10:00–11:00 a.m.', 'Ages 8–12', 'Stacy Wong', 'hiphop', 0, 10 ),
-		array( 'Ballet / Pointe — Senior & Senior App', 'saturday', '11:00 a.m.–12:00 p.m.', '', 'Azusa Okamoto', 'company', 0, 20 ),
-		array( 'Christmas Show Rehearsal', 'saturday', '11:00 a.m.–1:00 p.m.', 'Junior Company numbers', '', 'rehearsal', 0, 30 ),
-		array( 'Contemporary — Senior & Senior App', 'saturday', '12:00–1:00 p.m.', '', 'Azusa Okamoto', 'company', 0, 40 ),
-		array( 'Christmas Show Choreography — Junior Youth', 'saturday', '1:00–3:00 p.m.', 'Junior Youth Group, as needed', '', 'rehearsal', 0, 50 ),
-		array( 'Christmas Show Choreography — Ensemble', 'saturday', '1:00–3:00 p.m.', 'Dolls, Soldiers, Reindeer, Opening, and Contemporary', '', 'rehearsal', 0, 60 ),
+		array( 'Tiny Tots Dance', 'saturday', '9:00–9:45 a.m.', 'Ages 2.5–3.5', 'Linda Mercer-Botelho', 'combo', 0, 10 ),
+		array( 'KinderDance — Ballet & Tap', 'saturday', '9:45–10:45 a.m.', 'Ages 4–5', 'Linda Mercer-Botelho', 'combo', 0, 20 ),
+		array( 'Primary Dance Combo', 'saturday', '10:45–11:45 a.m.', 'Ages 6–7', 'Linda Mercer-Botelho', 'combo', 0, 30 ),
+		array( 'Junior Apprentice Rehearsal', 'saturday', '11:45 a.m.–1:15 p.m.', '', 'Linda Mercer-Botelho and Stacy Wong', 'rehearsal', 0, 40 ),
+		array( 'Senior Company Rehearsal', 'saturday', '1:15–3:30 p.m.', '', 'Linda Mercer-Botelho and Stacy Wong', 'rehearsal', 0, 50 ),
 	);
 }

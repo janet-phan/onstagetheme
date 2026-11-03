@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ONSTAGE_VERSION', '1.0.25' );
-define( 'ONSTAGE_CONTENT_VERSION', '1.0.25' );
+define( 'ONSTAGE_VERSION', '1.0.27' );
+define( 'ONSTAGE_CONTENT_VERSION', '1.0.27' );
 define( 'ONSTAGE_TICKETS_URL', 'https://30865.smallvenueticketing.com/nocookie/start-session.cfm?goto=%2F' );
 define( 'ONSTAGE_STUDIO_URL', 'https://portal.akadadance.com/auth?schoolId=225' );
 define( 'ONSTAGE_SCHOLARSHIP_FORM', 'https://forms.gle/xSwt6845z1gy8TQE8' );
@@ -23,6 +23,7 @@ define( 'ONSTAGE_EMAIL', 'LindaOnStage@AOL.com' );
 require get_template_directory() . '/inc/cpt-show.php';
 require get_template_directory() . '/inc/cpt-class.php';
 require get_template_directory() . '/inc/cpt-gallery.php';
+require get_template_directory() . '/inc/cpt-staff.php';
 require get_template_directory() . '/inc/client-dashboard.php';
 require get_template_directory() . '/inc/inner-pages.php';
 require get_template_directory() . '/inc/setup.php';
@@ -312,13 +313,16 @@ function onstage_query_loop_show_cpt( $query, $block ) {
 	if ( 'show' === $post_type ) {
 		$query['post_type']   = 'show';
 		$query['post_status'] = array( 'publish', 'future' );
+		$query['meta_key']    = 'onstage_show_start_date';
+		$query['orderby']     = 'meta_value';
+		$query['order']       = 'ASC';
 	}
 	return $query;
 }
 add_filter( 'query_loop_block_query_vars', 'onstage_query_loop_show_cpt', 10, 2 );
 
 /**
- * Published and scheduled Shows always list on the front end.
+ * Published and scheduled Shows always list on the front end in chronological order (soonest first).
  * Performance dates live in meta — a future WP publish date must not hide a show.
  *
  * @param WP_Query $query Query.
@@ -338,6 +342,11 @@ function onstage_include_upcoming_shows( $query ) {
 
 	if ( $is_show_query ) {
 		$query->set( 'post_status', array( 'publish', 'future' ) );
+		if ( ! $query->is_singular ) {
+			$query->set( 'meta_key', 'onstage_show_start_date' );
+			$query->set( 'orderby', 'meta_value' );
+			$query->set( 'order', 'ASC' );
+		}
 	}
 }
 add_action( 'pre_get_posts', 'onstage_include_upcoming_shows' );
@@ -661,15 +670,6 @@ function onstage_default_staff_data() {
 			'bio'        => "Stacy Wong has been part of the On Stage family for many years as both a performer and instructor. She specializes in Jazz, Tap, Musical Theater Dance, and performance choreography.\n\nStacy attended Providence College where she was a member of the Providence College Dance Team. Her strong technical background, performance experience, and upbeat teaching style make her a favorite among students of all ages.\n\nShe is passionate about helping children develop confidence, teamwork, and strong dance technique while creating a positive and encouraging classroom atmosphere. Stacy has choreographed numerous productions, showcases, and competition performances for On Stage students.",
 		),
 		array(
-			'slug'       => 'elle',
-			'name'       => 'Elle Gendreau',
-			'first_name' => 'Elle',
-			'last_name'  => 'Gendreau',
-			'email'      => 'elle.gendreau@onstage.local',
-			'image'      => 'staff-elle.jpg',
-			'bio'        => "Elle Gendreau is an accomplished performer, choreographer, and On Stage alumna who has grown up through the On Stage program. She has performed in numerous musical theater productions and special events throughout New England and has participated in performance opportunities at Walt Disney World.\n\nElle specializes in Musical Theater, Jazz, and Tap choreography and enjoys helping students connect storytelling with movement and performance. Her energy, creativity, and passion for teaching inspire students to work hard while enjoying the artistic process.\n\nAs both an instructor and mentor, Elle is dedicated to encouraging young performers to build confidence and pursue their goals both on and off the stage.",
-		),
-		array(
 			'slug'       => 'hillary',
 			'name'       => 'Hillary Coelho',
 			'first_name' => 'Hillary',
@@ -780,8 +780,8 @@ function onstage_get_staff_users() {
 			$show = ( 'devgirl' === $u->user_login ) ? '0' : '1';
 		}
 
-		// Skip explicitly hidden users ('0').
-		if ( '0' === (string) $show ) {
+		// Skip explicitly hidden users ('0') or former instructors (Elle).
+		if ( '0' === (string) $show || 'elle' === $u->user_login ) {
 			continue;
 		}
 
@@ -802,28 +802,93 @@ function onstage_get_staff_users() {
 }
 
 /**
- * Render Leadership / Instructors profile section dynamically from WordPress users.
+ * Render Leadership / Instructors profile section dynamically.
+ * Prioritizes Staff Member CPT (with drag-and-drop ordering and no user logins required),
+ * with graceful fallback to seed data. Alternates left/right on the About page.
  *
  * @return string HTML block markup.
  */
 function onstage_render_staff_profiles() {
-	$users = onstage_get_staff_users();
-	if ( empty( $users ) ) {
+	$members = array();
+
+	// 1. Primary: Staff Member Custom Post Type (no individual logins needed).
+	$staff_query = new WP_Query( array(
+		'post_type'      => 'staff_member',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'orderby'        => array(
+			'menu_order' => 'ASC',
+			'title'      => 'ASC',
+		),
+		'no_found_rows'  => true,
+	) );
+
+	if ( $staff_query->have_posts() ) {
+		while ( $staff_query->have_posts() ) {
+			$staff_query->the_post();
+			$post_id = get_the_ID();
+			$show    = get_post_meta( $post_id, 'onstage_staff_show_on_about', true );
+			if ( '0' === (string) $show ) {
+				continue;
+			}
+
+			$title    = get_the_title();
+			$role     = get_post_meta( $post_id, 'onstage_staff_title', true );
+			$bio      = get_post_meta( $post_id, 'onstage_staff_bio', true );
+			$photo    = get_post_meta( $post_id, 'onstage_staff_photo', true );
+			$thumb_id = get_post_thumbnail_id( $post_id );
+
+			if ( $thumb_id ) {
+				$img_url = wp_get_attachment_image_url( $thumb_id, 'medium' );
+			} elseif ( ! empty( $photo ) ) {
+				$img_url = ( 0 === strpos( $photo, 'http' ) || 0 === strpos( $photo, '/' ) ) ? $photo : onstage_img( $photo );
+			} else {
+				$img_url = onstage_img( 'staff-linda.jpg' );
+			}
+
+			$members[] = array(
+				'name'  => $title,
+				'role'  => $role,
+				'bio'   => $bio,
+				'image' => $img_url,
+			);
+		}
+		wp_reset_postdata();
+	}
+
+	// 2. Secondary fallback: seed data (strictly omitting Elle).
+	if ( empty( $members ) ) {
+		foreach ( onstage_default_staff_data() as $item ) {
+			if ( 'elle' === ( $item['slug'] ?? '' ) ) {
+				continue;
+			}
+			$members[] = array(
+				'name'  => $item['name'],
+				'role'  => '',
+				'bio'   => $item['bio'],
+				'image' => onstage_img( $item['image'] ),
+			);
+		}
+	}
+
+	if ( empty( $members ) ) {
 		return '';
 	}
 
 	$html = '';
-	foreach ( $users as $index => $user ) {
-		$display_name = $user->display_name ? $user->display_name : $user->user_login;
-		$bio        = get_the_author_meta( 'description', $user->ID );
+	foreach ( $members as $index => $m ) {
+		$display_name = $m['name'];
+		$bio          = $m['bio'];
+		$role         = $m['role'];
+		$img          = $m['image'];
+
 		$paragraphs = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n\r\n|\n\n|\r\r/', (string) $bio ) ), 'strlen' ) );
 		if ( empty( $paragraphs ) ) {
 			$paragraphs = array( sprintf( __( '%s is an instructor and team member at On Stage Academy of Performing Arts.', 'onstage' ), $display_name ) );
 		}
 
-		$img      = onstage_get_user_avatar_url( $user );
-		$is_even  = ( 0 === $index % 2 );
-		$class    = $is_even ? 'staff-member staff-left' : 'staff-member staff-right';
+		$is_even = ( 0 === $index % 2 );
+		$class   = $is_even ? 'staff-member staff-left' : 'staff-member staff-right';
 
 		$img_html = '<div class="wp-block-column staff-img-col" style="flex-basis:33.33%">' . "\n" .
 			'<figure class="wp-block-image size-medium staff-img no-lightbox"><img src="' . esc_url( $img ) . '" alt="' . esc_attr( $display_name ) . '" class="staff-img no-lightbox"/></figure>' . "\n" .
@@ -831,6 +896,9 @@ function onstage_render_staff_profiles() {
 
 		$text_html = '<div class="wp-block-column staff-text-col">' . "\n" .
 			'<h3 class="wp-block-heading pink-text">' . esc_html( $display_name ) . '</h3>' . "\n";
+		if ( ! empty( $role ) ) {
+			$text_html .= '<h4 class="staff-role-title" style="color:#6A3FC7; font-size:1.15rem; margin-top:-10px; margin-bottom:15px; font-weight:600;">' . esc_html( $role ) . '</h4>' . "\n";
+		}
 		foreach ( $paragraphs as $para ) {
 			$text_html .= '<p>' . esc_html( $para ) . '</p>' . "\n";
 		}
