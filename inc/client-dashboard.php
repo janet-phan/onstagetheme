@@ -135,12 +135,31 @@ function onstage_admin_cpt_help_banners() {
 			</p>
 			<ul style="list-style:disc; margin:0 0 10px 20px; font-size:13px; color:#475569;">
 				<li><strong><?php esc_html_e( 'Gallery Title (Title above):', 'onstage' ); ?></strong> <?php esc_html_e( 'Enter the show or costume name (e.g., Peter Pan Gallery).', 'onstage' ); ?></li>
-				<li><strong><?php esc_html_e( 'Cover Image:', 'onstage' ); ?></strong> <?php esc_html_e( 'Set the card cover photo under Featured Image in the right panel.', 'onstage' ); ?></li>
+				<li><strong><?php esc_html_e( 'Cover Image:', 'onstage' ); ?></strong> <?php esc_html_e( 'Click "Choose / Upload Cover Image" right in the panel below to set the album card photo.', 'onstage' ); ?></li>
 				<li><strong><?php esc_html_e( 'Gallery Category:', 'onstage' ); ?></strong> <?php esc_html_e( 'Choose "Show Photo Gallery" or "Costume Rental Gallery" in Gallery Details.', 'onstage' ); ?></li>
 				<li><strong><?php esc_html_e( 'Adding Photos:', 'onstage' ); ?></strong> <?php esc_html_e( 'Click "Add Photos from Media Library" below to upload and drag-and-drop photos.', 'onstage' ); ?></li>
 			</ul>
 		</div>
 		<?php
+	} elseif ( 'page' === $screen->post_type && 'post' === $screen->base ) {
+		global $post;
+		if ( $post && in_array( $post->post_name, array( 'gallery', 'photo-gallery' ), true ) ) {
+			?>
+			<div class="notice notice-info" style="border-left-color: #6A3FC7; background:#fff; padding:15px; margin-top:15px; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+				<h3 style="margin:0 0 8px 0; color:#6A3FC7; display:flex; align-items:center; gap:8px;">
+					<span>📸</span> <?php esc_html_e( 'Managing the Photo & Video Gallery Page', 'onstage' ); ?>
+				</h3>
+				<p style="margin:0 0 10px 0; font-size:14px; color:#334155;">
+					<?php esc_html_e( 'Good news! You do not need to touch shortcodes or page blocks to update the gallery:', 'onstage' ); ?>
+				</p>
+				<ul style="list-style:disc; margin:0 0 10px 20px; font-size:13px; color:#475569; line-height:1.6;">
+					<li><strong><?php esc_html_e( 'Show Photo Albums:', 'onstage' ); ?></strong> <?php printf( wp_kses_post( __( 'Go to <a href="%s" style="color:#6A3FC7; font-weight:600;">Galleries</a> in the left menu to add new shows or change photos. Any album you create there automatically appears on this page!', 'onstage' ) ), esc_url( admin_url( 'edit.php?post_type=gallery' ) ) ); ?></li>
+					<li><strong><?php esc_html_e( 'Reorder Album Cards:', 'onstage' ); ?></strong> <?php printf( wp_kses_post( __( 'Go to <a href="%s" style="color:#6A3FC7; font-weight:600;">Galleries → Reorder Albums</a> to drag and drop show albums into any order.', 'onstage' ) ), esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-galleries' ) ) ); ?></li>
+					<li><strong><?php esc_html_e( 'Featured YouTube Videos:', 'onstage' ); ?></strong> <?php esc_html_e( 'Scroll down to the "🎬 Featured YouTube Videos & Channel Link" box below this editor to change any of the 4 YouTube links or channel button.', 'onstage' ); ?></li>
+				</ul>
+			</div>
+			<?php
+		}
 	}
 }
 add_action( 'edit_form_after_title', 'onstage_admin_cpt_help_banners' );
@@ -218,12 +237,13 @@ function onstage_render_client_dashboard() {
 					<div style="width:48px; height:48px; border-radius:10px; background:#f3e8ff; color:#6A3FC7; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:16px;">🖼️</div>
 					<h2 style="margin:0 0 8px 0; font-size:18px; color:#0f172a;"><?php esc_html_e( 'Photo & Costume Galleries', 'onstage' ); ?></h2>
 					<p style="margin:0 0 20px 0; color:#64748b; font-size:14px; line-height:1.5;">
-						<?php esc_html_e( 'Add new photo galleries or costume rental collections, upload photos, and set cover images.', 'onstage' ); ?>
+						<?php esc_html_e( 'Add new photo galleries or costume rental collections, upload photos, and reorder album cards.', 'onstage' ); ?>
 					</p>
 				</div>
 				<div style="display:flex; gap:10px; flex-wrap:wrap;">
-					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery' ) ); ?>" class="button button-primary" style="background:#6A3FC7; border-color:#6A3FC7; font-weight:600;"><?php esc_html_e( 'View All Galleries', 'onstage' ); ?></a>
-					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=gallery' ) ); ?>" class="button button-secondary"><?php esc_html_e( '+ Add New Gallery', 'onstage' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery' ) ); ?>" class="button button-primary" style="background:#6A3FC7; border-color:#6A3FC7; font-weight:600;"><?php esc_html_e( 'View All Albums', 'onstage' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=gallery&page=onstage-reorder-galleries' ) ); ?>" class="button button-secondary"><?php esc_html_e( '↕ Reorder Albums', 'onstage' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=gallery' ) ); ?>" class="button button-secondary"><?php esc_html_e( '+ Add New Album', 'onstage' ); ?></a>
 				</div>
 			</div>
 

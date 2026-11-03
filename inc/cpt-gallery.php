@@ -208,6 +208,13 @@ function onstage_gallery_meta_box_html( $post ) {
 	$link      = get_post_meta( $post->ID, 'onstage_gallery_link', true );
 	$focal     = get_post_meta( $post->ID, 'onstage_gallery_focal_point', true );
 	$images    = get_post_meta( $post->ID, 'onstage_gallery_images', true );
+	$thumb_id  = get_post_thumbnail_id( $post->ID );
+
+	if ( $thumb_id ) {
+		$cover_preview = wp_get_attachment_image_url( $thumb_id, 'medium' );
+	} else {
+		$cover_preview = onstage_get_gallery_cover_url( $post->ID );
+	}
 
 	if ( empty( $images ) ) {
 		$images = onstage_get_default_gallery_images( $post->ID );
@@ -223,6 +230,29 @@ function onstage_gallery_meta_box_html( $post ) {
 		$focal = 'top center';
 	}
 	?>
+	<!-- Card 1: Cover Image & Quick Info -->
+	<div class="onstage-admin-card" style="background:#f8fafc; border:1px solid #cbd5e1; padding:18px; border-radius:8px; margin-bottom:15px; display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+		<div style="text-align:center;">
+			<img id="onstage_gallery_cover_preview" src="<?php echo esc_url( $cover_preview ); ?>" alt="Album Cover" style="width:140px; height:105px; object-fit:cover; border-radius:8px; border:2px solid #6A3FC7; box-shadow:0 4px 12px rgba(0,0,0,0.12); display:block; background:#0f172a;" />
+		</div>
+		<div style="flex:1; min-width:260px;">
+			<h4 style="margin:0 0 6px 0; font-size:16px; color:#0f172a;"><?php esc_html_e( 'Album Card Cover Image', 'onstage' ); ?></h4>
+			<p class="description" style="margin:0 0 12px 0; font-size:13px; color:#64748b; line-height:1.5;">
+				<?php esc_html_e( 'This is the main image displayed on the album card on the /gallery/ page grid. (Syncs automatically with WordPress Featured Image).', 'onstage' ); ?>
+			</p>
+			<input type="hidden" id="onstage_gallery_cover_id" name="onstage_gallery_cover_id" value="<?php echo esc_attr( $thumb_id ? $thumb_id : '' ); ?>" />
+			<div style="display:flex; gap:8px;">
+				<button type="button" class="button button-secondary" id="onstage_gallery_cover_btn" style="font-weight:600;">
+					<span class="dashicons dashicons-format-image" style="vertical-align:middle; margin-top:-2px;"></span>
+					<?php esc_html_e( 'Choose / Upload Cover Image', 'onstage' ); ?>
+				</button>
+				<button type="button" class="button button-link-delete" id="onstage_gallery_cover_remove_btn" style="<?php echo $thumb_id ? '' : 'display:none;'; ?>">
+					<?php esc_html_e( 'Remove Cover', 'onstage' ); ?>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<div class="onstage-admin-card" style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:6px; margin-bottom:15px;">
 		<h4 style="margin:0 0 10px 0; color:#0f172a;"><?php esc_html_e( '📌 Gallery Category & Page Visibility', 'onstage' ); ?></h4>
 		
@@ -373,6 +403,36 @@ function onstage_gallery_meta_box_html( $post ) {
 
 		renderPreviewGrid();
 
+		// Cover Image Media Library Picker
+		var coverFrame;
+		$('#onstage_gallery_cover_btn').on('click', function(e) {
+			e.preventDefault();
+			if (coverFrame) {
+				coverFrame.open();
+				return;
+			}
+			coverFrame = wp.media({
+				title: '<?php echo esc_js( __( 'Select Album Card Cover Image', 'onstage' ) ); ?>',
+				button: { text: '<?php echo esc_js( __( 'Use as Cover Image', 'onstage' ) ); ?>' },
+				multiple: false
+			});
+			coverFrame.on('select', function() {
+				var attachment = coverFrame.state().get('selection').first().toJSON();
+				$('#onstage_gallery_cover_id').val(attachment.id);
+				var imgUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+				$('#onstage_gallery_cover_preview').attr('src', imgUrl);
+				$('#onstage_gallery_cover_remove_btn').show();
+			});
+			coverFrame.open();
+		});
+
+		$('#onstage_gallery_cover_remove_btn').on('click', function(e) {
+			e.preventDefault();
+			$('#onstage_gallery_cover_id').val('');
+			$('#onstage_gallery_cover_preview').attr('src', '<?php echo esc_js( onstage_img( 'placeholder_show.png' ) ); ?>');
+			$(this).hide();
+		});
+
 		var frame;
 		$('#onstage_add_gallery_photos_btn').on('click', function(e) {
 			e.preventDefault();
@@ -445,6 +505,15 @@ function onstage_save_gallery_meta( $post_id ) {
 	}
 	if ( isset( $_POST['onstage_gallery_images'] ) ) {
 		update_post_meta( $post_id, 'onstage_gallery_images', sanitize_textarea_field( wp_unslash( $_POST['onstage_gallery_images'] ) ) );
+	}
+
+	if ( isset( $_POST['onstage_gallery_cover_id'] ) ) {
+		$thumb_val = sanitize_text_field( wp_unslash( $_POST['onstage_gallery_cover_id'] ) );
+		if ( ! empty( $thumb_val ) ) {
+			set_post_thumbnail( $post_id, (int) $thumb_val );
+		} else {
+			delete_post_thumbnail( $post_id );
+		}
 	}
 }
 add_action( 'save_post_gallery', 'onstage_save_gallery_meta' );
@@ -719,5 +788,381 @@ function onstage_single_gallery_content( $content ) {
 	return $output;
 }
 add_filter( 'the_content', 'onstage_single_gallery_content' );
+
+/**
+ * Add Submenu: Drag & Drop Reorder Galleries.
+ */
+function onstage_register_gallery_reorder_page() {
+	add_submenu_page(
+		'edit.php?post_type=gallery',
+		__( 'Reorder Albums', 'onstage' ),
+		__( 'Reorder Albums', 'onstage' ),
+		'edit_posts',
+		'onstage-reorder-galleries',
+		'onstage_render_gallery_reorder_page'
+	);
+}
+add_action( 'admin_menu', 'onstage_register_gallery_reorder_page' );
+
+/**
+ * Render Drag-and-Drop Reorder Galleries admin page.
+ */
+function onstage_render_gallery_reorder_page() {
+	$galleries = get_posts( array(
+		'post_type'      => 'gallery',
+		'post_status'    => array( 'publish', 'draft' ),
+		'posts_per_page' => -1,
+		'orderby'        => array(
+			'menu_order' => 'ASC',
+			'title'      => 'ASC',
+		),
+	) );
+	?>
+	<div class="wrap" style="max-width:850px; margin:20px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+		<h1 style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+			<span>🖼️</span> <?php esc_html_e( 'Reorder Photo & Costume Galleries', 'onstage' ); ?>
+		</h1>
+		<p class="description" style="font-size:14px; color:#475569; margin-bottom:20px;">
+			<?php esc_html_e( 'Drag and drop albums to change the card display order on the Photo Gallery and Costume Rental pages. Changes are saved automatically.', 'onstage' ); ?>
+		</p>
+
+		<div id="onstage_gallery_reorder_status" style="display:none; padding:12px 16px; border-radius:6px; margin-bottom:15px; font-weight:600;"></div>
+
+		<div id="onstage_gallery_sortable_list" style="display:flex; flex-direction:column; gap:10px;">
+			<?php foreach ( $galleries as $index => $g ) :
+				$cover = onstage_get_gallery_cover_url( $g->ID );
+				$type  = get_post_meta( $g->ID, 'onstage_gallery_type', true );
+				$type_label = ( 'costume' === $type ) ? __( 'Costume Gallery', 'onstage' ) : __( 'Photo Gallery', 'onstage' );
+				$type_bg    = ( 'costume' === $type ) ? '#fce7f3' : '#e0f2fe';
+				$type_color = ( 'costume' === $type ) ? '#be185d' : '#0369a1';
+				?>
+				<div class="onstage-gallery-sort-item" data-id="<?php echo esc_attr( $g->ID ); ?>" style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:12px 18px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 4px rgba(0,0,0,0.04); cursor:grab; user-select:none;">
+					<span class="dashicons dashicons-menu" style="color:#94a3b8; font-size:20px; cursor:grab;"></span>
+					<span class="onstage-gallery-badge" style="background:#6A3FC7; color:#fff; font-weight:700; font-size:12px; padding:3px 8px; border-radius:12px; min-width:32px; text-align:center;">
+						#<?php echo esc_html( $index + 1 ); ?>
+					</span>
+					<img src="<?php echo esc_url( $cover ); ?>" alt="" style="width:55px; height:55px; border-radius:6px; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0;" />
+					<div style="flex:1;">
+						<strong style="font-size:15px; color:#0f172a; display:block;"><?php echo esc_html( $g->post_title ); ?></strong>
+						<span style="display:inline-block; margin-top:3px; background:<?php echo esc_attr( $type_bg ); ?>; color:<?php echo esc_attr( $type_color ); ?>; font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px;">
+							<?php echo esc_html( $type_label ); ?>
+						</span>
+					</div>
+					<a href="<?php echo esc_url( get_edit_post_link( $g->ID ) ); ?>" class="button button-small" style="text-decoration:none;"><?php esc_html_e( 'Edit Photos', 'onstage' ); ?></a>
+				</div>
+			<?php endforeach; ?>
+		</div>
+	</div>
+
+	<script>
+	jQuery(document).ready(function($) {
+		$('#onstage_gallery_sortable_list').sortable({
+			cursor: 'grabbing',
+			opacity: 0.8,
+			update: function(event, ui) {
+				var order = [];
+				$('#onstage_gallery_sortable_list .onstage-gallery-sort-item').each(function(index) {
+					order.push($(this).data('id'));
+					$(this).find('.onstage-gallery-badge').text('#' + (index + 1));
+				});
+
+				$('#onstage_gallery_reorder_status').css({
+					background: '#fef3c7',
+					color: '#92400e',
+					display: 'block'
+				}).text('<?php echo esc_js( __( 'Saving new order...', 'onstage' ) ); ?>');
+
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'onstage_save_gallery_order',
+						order: order,
+						nonce: '<?php echo esc_js( wp_create_nonce( 'onstage_gallery_reorder_nonce' ) ); ?>'
+					},
+					success: function(response) {
+						if (response.success) {
+							$('#onstage_gallery_reorder_status').css({
+								background: '#dcfce7',
+								color: '#15803d'
+							}).text('<?php echo esc_js( __( '✓ Gallery order saved successfully!', 'onstage' ) ); ?>');
+							setTimeout(function() {
+								$('#onstage_gallery_reorder_status').fadeOut();
+							}, 2500);
+						} else {
+							$('#onstage_gallery_reorder_status').css({
+								background: '#fee2e2',
+								color: '#b91c1c'
+							}).text('<?php echo esc_js( __( 'Error saving gallery order.', 'onstage' ) ); ?>');
+						}
+					},
+					error: function() {
+						$('#onstage_gallery_reorder_status').css({
+							background: '#fee2e2',
+							color: '#b91c1c'
+						}).text('<?php echo esc_js( __( 'Connection error while saving gallery order.', 'onstage' ) ); ?>');
+					}
+				});
+			}
+		});
+	});
+	</script>
+	<?php
+}
+
+/**
+ * AJAX Handler for saving reordered galleries.
+ */
+function onstage_ajax_save_gallery_order() {
+	check_ajax_referer( 'onstage_gallery_reorder_nonce', 'nonce' );
+
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( 'Unauthorized' );
+	}
+
+	$order = isset( $_POST['order'] ) ? (array) $_POST['order'] : array();
+	if ( empty( $order ) ) {
+		wp_send_json_error( 'Empty order' );
+	}
+
+	foreach ( $order as $index => $post_id ) {
+		$post_id = (int) $post_id;
+		if ( $post_id ) {
+			wp_update_post( array(
+				'ID'         => $post_id,
+				'menu_order' => ( $index + 1 ) * 10,
+			) );
+		}
+	}
+
+	wp_send_json_success();
+}
+add_action( 'wp_ajax_onstage_save_gallery_order', 'onstage_ajax_save_gallery_order' );
+
+/**
+ * Helper to extract YouTube video ID from URL or raw ID.
+ *
+ * @param string $input URL or video ID.
+ * @return string Clean 11-char ID or empty.
+ */
+function onstage_extract_youtube_id( $input ) {
+	$input = trim( $input );
+	if ( empty( $input ) ) {
+		return '';
+	}
+
+	// Match watch?v= or youtu.be/ or embed/
+	if ( preg_match( '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $input, $matches ) ) {
+		return $matches[1];
+	}
+
+	// Direct 11-char ID
+	if ( preg_match( '/^[a-zA-Z0-9_-]{11}$/', $input ) ) {
+		return $input;
+	}
+
+	return $input;
+}
+
+/**
+ * Meta Box on the Photo Gallery Page to easily manage the 4 Featured YouTube videos without shortcodes!
+ */
+function onstage_gallery_page_videos_meta_box() {
+	$screen = get_current_screen();
+	if ( ! $screen || 'page' !== $screen->post_type ) {
+		return;
+	}
+
+	global $post;
+	if ( ! $post || ( 'gallery' !== $post->post_name && false === strpos( strtolower( $post->post_title ), 'gallery' ) ) ) {
+		return;
+	}
+
+	add_meta_box(
+		'onstage_gallery_videos_box',
+		__( '🎥 Featured YouTube Videos (Shown at Bottom of Gallery Page)', 'onstage' ),
+		'onstage_gallery_videos_meta_box_html',
+		'page',
+		'normal',
+		'high'
+	);
+}
+add_action( 'add_meta_boxes', 'onstage_gallery_page_videos_meta_box' );
+
+/**
+ * Meta Box markup for Featured YouTube Videos.
+ *
+ * @param WP_Post $post Current post.
+ */
+function onstage_gallery_videos_meta_box_html( $post ) {
+	wp_nonce_field( 'onstage_gallery_videos_meta', 'onstage_gallery_videos_nonce' );
+
+	$defaults = array(
+		'v1'      => 'Zc7XV9ESEEc',
+		'v2'      => 'o6OmG95CnyM',
+		'v3'      => 'IQyLCBmc0nY',
+		'v4'      => 'yRWus1LGt6o',
+		'channel' => 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg',
+	);
+
+	$v1      = get_post_meta( $post->ID, 'onstage_youtube_v1', true ) ?: $defaults['v1'];
+	$v2      = get_post_meta( $post->ID, 'onstage_youtube_v2', true ) ?: $defaults['v2'];
+	$v3      = get_post_meta( $post->ID, 'onstage_youtube_v3', true ) ?: $defaults['v3'];
+	$v4      = get_post_meta( $post->ID, 'onstage_youtube_v4', true ) ?: $defaults['v4'];
+	$channel = get_post_meta( $post->ID, 'onstage_youtube_channel', true ) ?: $defaults['channel'];
+	?>
+	<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:10px 0;">
+		<p class="description" style="margin-bottom:15px; font-size:14px; color:#334155;">
+			<?php esc_html_e( 'Paste YouTube video links or IDs below to update the featured videos on this page. No shortcodes or code required!', 'onstage' ); ?>
+		</p>
+
+		<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:15px; margin-bottom:15px;">
+			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+				<label for="onstage_youtube_v1" style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#0f172a;">
+					🎬 <?php esc_html_e( 'Featured Video 1:', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_youtube_v1" name="onstage_youtube_v1" value="<?php echo esc_attr( $v1 ); ?>" class="widefat" placeholder="https://youtube.com/watch?v=..." />
+			</div>
+
+			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+				<label for="onstage_youtube_v2" style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#0f172a;">
+					🎬 <?php esc_html_e( 'Featured Video 2:', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_youtube_v2" name="onstage_youtube_v2" value="<?php echo esc_attr( $v2 ); ?>" class="widefat" placeholder="https://youtube.com/watch?v=..." />
+			</div>
+
+			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+				<label for="onstage_youtube_v3" style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#0f172a;">
+					🎬 <?php esc_html_e( 'Featured Video 3:', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_youtube_v3" name="onstage_youtube_v3" value="<?php echo esc_attr( $v3 ); ?>" class="widefat" placeholder="https://youtube.com/watch?v=..." />
+			</div>
+
+			<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+				<label for="onstage_youtube_v4" style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#0f172a;">
+					🎬 <?php esc_html_e( 'Featured Video 4:', 'onstage' ); ?>
+				</label>
+				<input type="text" id="onstage_youtube_v4" name="onstage_youtube_v4" value="<?php echo esc_attr( $v4 ); ?>" class="widefat" placeholder="https://youtube.com/watch?v=..." />
+			</div>
+		</div>
+
+		<div style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:12px;">
+			<label for="onstage_youtube_channel" style="display:block; font-weight:700; font-size:13px; margin-bottom:4px; color:#0f172a;">
+				🔗 <?php esc_html_e( 'YouTube Channel Link ("VIEW MORE ON YOUTUBE" button):', 'onstage' ); ?>
+			</label>
+			<input type="url" id="onstage_youtube_channel" name="onstage_youtube_channel" value="<?php echo esc_attr( $channel ); ?>" class="widefat" placeholder="https://www.youtube.com/channel/..." />
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Save Featured YouTube Videos on Gallery page.
+ *
+ * @param int $post_id Post ID.
+ */
+function onstage_save_gallery_page_videos( $post_id ) {
+	if ( ! isset( $_POST['onstage_gallery_videos_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['onstage_gallery_videos_nonce'] ) ), 'onstage_gallery_videos_meta' ) ) {
+		return;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+	if ( ! current_user_can( 'edit_page', $post_id ) ) {
+		return;
+	}
+
+	foreach ( array( 'v1', 'v2', 'v3', 'v4' ) as $key ) {
+		$field = 'onstage_youtube_' . $key;
+		if ( isset( $_POST[ $field ] ) ) {
+			$raw = sanitize_text_field( wp_unslash( $_POST[ $field ] ) );
+			$id  = onstage_extract_youtube_id( $raw );
+			update_post_meta( $post_id, $field, $id );
+		}
+	}
+
+	if ( isset( $_POST['onstage_youtube_channel'] ) ) {
+		update_post_meta( $post_id, 'onstage_youtube_channel', esc_url_raw( wp_unslash( $_POST['onstage_youtube_channel'] ) ) );
+	}
+}
+add_action( 'save_post_page', 'onstage_save_gallery_page_videos' );
+
+/**
+ * Dynamic shortcode for Featured Videos section on Gallery page: [onstage_featured_videos]
+ *
+ * @return string HTML output.
+ */
+function onstage_featured_videos_shortcode() {
+	$page_id = get_the_ID();
+	$v1 = get_post_meta( $page_id, 'onstage_youtube_v1', true ) ?: 'Zc7XV9ESEEc';
+	$v2 = get_post_meta( $page_id, 'onstage_youtube_v2', true ) ?: 'o6OmG95CnyM';
+	$v3 = get_post_meta( $page_id, 'onstage_youtube_v3', true ) ?: 'IQyLCBmc0nY';
+	$v4 = get_post_meta( $page_id, 'onstage_youtube_v4', true ) ?: 'yRWus1LGt6o';
+	$channel = get_post_meta( $page_id, 'onstage_youtube_channel', true ) ?: 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg';
+
+	$videos = array( $v1, $v2, $v3, $v4 );
+	$chunks = array_chunk( $videos, 2 );
+
+	$html = '';
+	foreach ( $chunks as $row ) {
+		$html .= '<div class="wp-block-columns youtube-grid">' . "\n";
+		foreach ( $row as $vid_id ) {
+			$html .= '  <div class="wp-block-column">' . "\n";
+			$html .= '    <div class="wp-block-group youtube-card">' . "\n";
+			$html .= '      ' . onstage_youtube_shortcode( array( 'id' => $vid_id, 'title' => 'On Stage featured video' ) ) . "\n";
+			$html .= '    </div>' . "\n";
+			$html .= '  </div>' . "\n";
+		}
+		$html .= '</div>' . "\n";
+	}
+
+	$html .= '<p class="program-child-actions youtube-channel-cta has-text-align-center"><a class="btn btn-pink rounded-pill" href="' . esc_url( $channel ) . '" target="_blank" rel="noreferrer noopener">' . esc_html__( 'VIEW MORE ON YOUTUBE', 'onstage' ) . '</a></p>' . "\n";
+
+	return $html;
+}
+add_shortcode( 'onstage_featured_videos', 'onstage_featured_videos_shortcode' );
+
+/**
+ * Filter Gallery Page content on the front end to automatically inject updated
+ * YouTube video selections if the page was previously created with static shortcodes.
+ *
+ * @param string $content Page post content.
+ * @return string Filtered content.
+ */
+function onstage_filter_gallery_page_content( $content ) {
+	if ( ! is_page( array( 'gallery', 'photo-gallery' ) ) ) {
+		return $content;
+	}
+
+	$page_id = get_the_ID();
+	$v1      = get_post_meta( $page_id, 'onstage_youtube_v1', true );
+	$v2      = get_post_meta( $page_id, 'onstage_youtube_v2', true );
+	$v3      = get_post_meta( $page_id, 'onstage_youtube_v3', true );
+	$v4      = get_post_meta( $page_id, 'onstage_youtube_v4', true );
+	$channel = get_post_meta( $page_id, 'onstage_youtube_channel', true );
+
+	if ( $v1 || $v2 || $v3 || $v4 || $channel ) {
+		if ( $v1 ) {
+			$content = preg_replace( '/\[onstage_youtube\s+id=["\']Zc7XV9ESEEc["\']/', '[onstage_youtube id="' . esc_attr( $v1 ) . '"', $content );
+		}
+		if ( $v2 ) {
+			$content = preg_replace( '/\[onstage_youtube\s+id=["\']o6OmG95CnyM["\']/', '[onstage_youtube id="' . esc_attr( $v2 ) . '"', $content );
+		}
+		if ( $v3 ) {
+			$content = preg_replace( '/\[onstage_youtube\s+id=["\']IQyLCBmc0nY["\']/', '[onstage_youtube id="' . esc_attr( $v3 ) . '"', $content );
+		}
+		if ( $v4 ) {
+			$content = preg_replace( '/\[onstage_youtube\s+id=["\']yRWus1LGt6o["\']/', '[onstage_youtube id="' . esc_attr( $v4 ) . '"', $content );
+		}
+		if ( $channel ) {
+			$content = str_replace( 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg', esc_url( $channel ), $content );
+		}
+	}
+
+	return $content;
+}
+add_filter( 'the_content', 'onstage_filter_gallery_page_content', 5 );
+
+
 
 

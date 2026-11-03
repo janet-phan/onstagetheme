@@ -241,6 +241,42 @@ function onstage_destination_media_page_blocks( $args ) {
  */
 function onstage_show_gallery_page_blocks( $args ) {
 	$youtube = 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg';
+
+	// If CPT post exists with custom uploaded photos, use them dynamically!
+	if ( ! empty( $args['title'] ) ) {
+		$cpt = get_page_by_title( $args['title'], OBJECT, 'gallery' );
+		if ( ! $cpt ) {
+			// Try slug
+			$slug = sanitize_title( $args['title'] );
+			$cpt  = get_page_by_path( $slug . '-cpt', OBJECT, 'gallery' );
+		}
+		if ( $cpt ) {
+			$meta_images = get_post_meta( $cpt->ID, 'onstage_gallery_images', true );
+			if ( ! empty( $meta_images ) ) {
+				$parsed = array();
+				$lines  = preg_split( '/[\r\n,]+/', $meta_images );
+				foreach ( $lines as $idx => $line ) {
+					$line = trim( $line );
+					if ( ! empty( $line ) ) {
+						if ( filter_var( $line, FILTER_VALIDATE_URL ) ) {
+							$url = $line;
+						} elseif ( is_numeric( $line ) ) {
+							$url = wp_get_attachment_image_url( (int) $line, 'large' );
+						} else {
+							$url = onstage_img( $line );
+						}
+						if ( $url ) {
+							$parsed[] = array( 'src' => $url, 'alt' => sprintf( '%s photo %d', $args['title'], $idx + 1 ) );
+						}
+					}
+				}
+				if ( ! empty( $parsed ) ) {
+					$args['images'] = $parsed;
+				}
+			}
+		}
+	}
+
 	$hero    = isset( $args['hero'] ) ? $args['hero'] : $args['images'][0]['src'];
 	$actions = '<p class="program-child-actions"><a class="btn btn-pink rounded-pill" href="/gallery/">VIEW ALL GALLERIES</a><a class="btn btn-black" href="' . esc_url( $youtube ) . '" target="_blank" rel="noreferrer noopener">VIEW MORE ON YOUTUBE</a></p>';
 

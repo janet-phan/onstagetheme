@@ -39,60 +39,8 @@ $youtube   = 'https://www.youtube.com/channel/UCYURAEfRUgjAipibRgcIiOg';
 	<!-- wp:paragraph {"align":"center"} -->
 	<p class="has-text-align-center">Enjoy highlights from On Stage performances and productions.</p>
 	<!-- /wp:paragraph -->
-	<!-- wp:columns {"className":"youtube-grid"} -->
-	<div class="wp-block-columns youtube-grid">
-		<!-- wp:column -->
-		<div class="wp-block-column">
-			<!-- wp:group {"className":"youtube-card"} -->
-			<div class="wp-block-group youtube-card">
-				<!-- wp:shortcode -->
-				[onstage_youtube id="Zc7XV9ESEEc" title="On Stage featured video"]
-				<!-- /wp:shortcode -->
-			</div>
-			<!-- /wp:group -->
-		</div>
-		<!-- /wp:column -->
-		<!-- wp:column -->
-		<div class="wp-block-column">
-			<!-- wp:group {"className":"youtube-card"} -->
-			<div class="wp-block-group youtube-card">
-				<!-- wp:shortcode -->
-				[onstage_youtube id="o6OmG95CnyM" title="On Stage featured video"]
-				<!-- /wp:shortcode -->
-			</div>
-			<!-- /wp:group -->
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
-	<!-- wp:columns {"className":"youtube-grid"} -->
-	<div class="wp-block-columns youtube-grid">
-		<!-- wp:column -->
-		<div class="wp-block-column">
-			<!-- wp:group {"className":"youtube-card"} -->
-			<div class="wp-block-group youtube-card">
-				<!-- wp:shortcode -->
-				[onstage_youtube id="IQyLCBmc0nY" title="On Stage featured video"]
-				<!-- /wp:shortcode -->
-			</div>
-			<!-- /wp:group -->
-		</div>
-		<!-- /wp:column -->
-		<!-- wp:column -->
-		<div class="wp-block-column">
-			<!-- wp:group {"className":"youtube-card"} -->
-			<div class="wp-block-group youtube-card">
-				<!-- wp:shortcode -->
-				[onstage_youtube id="yRWus1LGt6o" title="On Stage featured video"]
-				<!-- /wp:shortcode -->
-			</div>
-			<!-- /wp:group -->
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
-	<!-- wp:html -->
-	<p class="program-child-actions youtube-channel-cta has-text-align-center"><a class="btn btn-pink rounded-pill" href="<?php echo esc_url( $youtube ); ?>" target="_blank" rel="noreferrer noopener">VIEW MORE ON YOUTUBE</a></p>
-	<!-- /wp:html -->
+	<!-- wp:shortcode -->
+	[onstage_featured_videos]
+	<!-- /wp:shortcode -->
 </div>
 <!-- /wp:group -->
